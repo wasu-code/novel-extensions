@@ -243,7 +243,7 @@ local function listing(name, inc, url)
 		-- ?genre= (instead of ?tagsAdd=) is the only working listing filter,
 		-- so if any filter is used, switch from listing to search
 		local filterstring = createFilterString(data)
-		if filterstring ~= "?" then
+		if filterstring ~= "?page=1" then
 			url = expandURL("/fictions/search")
 			inc = false --don't crash the site
 		end
