@@ -212,9 +212,9 @@
       "fileName": "Syosetsu",
       "imageURL": "https://github.com/shosetsuorg/extensions/raw/dev/icons/Syosetsu.png",
       "lang": "ja",
-      "ver": "1.2.4",
+      "ver": "1.2.5",
       "libVer": "1.0.0",
-      "md5": "85bbd1e8f8d8ff9ff9f26e7abac41d62d0295869709c5904ce948b551a487672",
+      "md5": "dd7dc5b430c01865071544b970be06782f7e124235c17e14de1434161a6635df",
       "type": "LuaScript"
     },
     {
