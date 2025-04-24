@@ -85,6 +85,13 @@
       "website": ""
     },
     {
+      "id": 1550377221,
+      "name": "Bigrand",
+      "desc": "Worked on unhtml",
+      "imageURL": "",
+      "website": ""
+    },
+    {
       "id": 1379167306,
       "name": "David Kolf",
       "desc": "Worked on dkjson",
@@ -169,6 +176,12 @@
       "ver": "1.0.1",
       "url": null,
       "hash": "97803cfe54b21695dda1e8f8a37c5933c4dc7691e5df17c2c1df6cef1203c259"
+    },
+    {
+      "name": "unhtml",
+      "ver": "1.0.0",
+      "url": null,
+      "hash": "31cedb54f46b1df35b5d7630d48185d58106336b0acb555ab66dce2e209d8176"
     },
     {
       "name": "url",
