@@ -1,13 +1,15 @@
--- {"id":3,"ver":"1.2.5","libVer":"1.0.0","author":"Doomsdayrs","dep":["url>=1.0.0"]}
+-- {"id":3,"ver":"2.2.5","libVer":"1.0.0","author":"Doomsdayrs","dep":["url>=1.0.0"]}
 
 local baseURL = "https://yomou.syosetu.com"
 local passageURL = "https://ncode.syosetu.com"
+
 local encode = Require("url").encode
 
 local function getTotalPages(html)
 	local lastPageLink = html:select(".c-pager__item--last"):attr("href")
 	if lastPageLink then
 		local totalPages = tonumber(lastPageLink:match("p=(%d+)"))
+
 		return totalPages or 1
 	end
 	return 1
@@ -23,18 +25,30 @@ local function expandURL(url)
 	return passageURL .. url
 end
 
+local function parseResults(document)
+	return mapNotNil(document:select(".smpnovel_list"), function(v)
+		local titleElement = v:selectFirst(".novel_h")
+		local linkElement = v:selectFirst(".read_button")
+
+		if not titleElement and not linkElement then
+			return nil
+		end
+
+		local title = titleElement:text()
+		local link = shrinkURL(linkElement:attr("href"))
+
+		return Novel({
+			title = title,
+			link = link
+		})
+	end)
+end
+
 local function search(data)
 	local url = baseURL .. "/search.php?&word=" .. encode(data[0]) .. "&type=re&p=" .. data[PAGE]
 	local document = GETDocument(url)
 
-
-	return map(document:select("div.searchkekka_box"), function(v)
-		local novel = Novel()
-		local e = v:selectFirst("div.novel_h"):selectFirst("a.tl")
-		novel:setLink(shrinkURL(e:attr("href")))
-		novel:setTitle(e:text())
-		return novel
-	end)
+	return parseResults(document)
 end
 
 local function parseListing(filter, data)
@@ -45,13 +59,70 @@ local function parseListing(filter, data)
 	local url = baseURL .. filter .. data[PAGE]
 	local document = GETDocument(url)
 
-	return map(document:select("div.searchkekka_box"), function(v)
-		local novel = Novel()
-		local e = v:selectFirst("div.novel_h"):selectFirst("a.tl")
-		novel:setLink(shrinkURL(e:attr("href")))
-		novel:setTitle(e:text())
-		return novel
-	end)
+	return parseResults(document)
+end
+
+local function getPassage(chapterURL)
+	local document = GETDocument(passageURL .. chapterURL)
+	local chapTitle = document:selectFirst(".p-novel__subtitle-episode"):text()
+	local chapter = document:selectFirst(".p-novel__text")
+	chapter:prepend("<h1>" .. chapTitle .. "</h1>")
+
+	return pageOfElem(chapter, false)
+end
+
+local function parseNovel(novelURL, loadChapters)
+	local document = GETDocument(passageURL .. novelURL)
+	local author = { document:selectFirst(".p-novel__author a"):text() }
+
+	if not author[1] then
+		error("Error: Author not found!")
+	end
+
+	local title = document:selectFirst(".p-novel__title"):text()
+
+	local descriptionElement = document:selectFirst(".p-novel__summary")
+	local description = ""
+	if descriptionElement then
+		description = tostring(descriptionElement):gsub("<br%s*/?>", "\n")
+		:gsub("<[^>]->", "")                     
+		:gsub("\n%s*\n+", "\n\n")       
+		:gsub("^%s+", "")
+		:gsub("%s+$", "")
+	end
+
+	local NovelInfo = NovelInfo {
+		title = title,
+		link = novelURL,
+		language = "jpn",
+		description = description,
+		authors = author
+	}
+
+	if loadChapters then
+		local chapters = {}
+		local totalPages = getTotalPages(document)
+		for page = 1, totalPages do
+			local pageURL = novelURL .. "?p=" .. page
+
+			local pageDocument = GETDocument(passageURL .. pageURL)
+			map(pageDocument:select(".p-eplist__sublist"), function(v)
+				local chap = NovelChapter()
+				local chapterElement = v:selectFirst(".p-eplist__subtitle")
+				local chapTitle = chapterElement:text()
+				local link = chapterElement:attr("href")
+				local release = v:selectFirst(".p-eplist__update"):text()
+
+				chap:setTitle(chapTitle)
+				chap:setLink(link)
+				chap:setRelease(release)
+				table.insert(chapters, chap)
+			end)
+		end
+		NovelInfo:setChapters(AsList(chapters))
+	end
+
+	return NovelInfo 
 end
 
 return {
@@ -59,6 +130,16 @@ return {
 	name = "Syosetsu",
 	baseURL = baseURL,
 	imageURL = "https://github.com/shosetsuorg/extensions/raw/dev/icons/Syosetsu.png",
+	hasCloudFlare = false,
+	hasSearch = true,
+	chapterType = ChapterType.HTML,
+	getPassage = getPassage,
+	parseNovel = parseNovel,
+	shrinkURL = shrinkURL,
+	expandURL = expandURL,
+	search = search,
+	isSearchIncrementing = true,
+	startIndex = 1,
 
 	listings = {
 		Listing("Most Weekly Views", true, function(data)
@@ -103,62 +184,5 @@ return {
 		Listing("Oldest Updates", true, function(data)
 			return parseListing("/search.php?type=re&order=old&p=", data)
 		end)
-	},
-
-	-- Default functions that had to be set
-	getPassage = function(chapterURL)
-		local document = GETDocument(passageURL .. chapterURL)
-		local e = document:selectFirst(".p-novel")
-		if not e then
-			return "INVALID PARSING, CONTACT DEVELOPERS"
-		end
-		return table.concat(map(e:select("p"), function(v)
-			return v:text()
-		end), "\n") :gsub("<br>", "\n\n")
-	end,
-
-	parseNovel = function(novelURL, loadChapters)
-		local novelPage = NovelInfo()
-		local document = GETDocument(passageURL .. novelURL)
-
-		novelPage:setAuthors({ document:selectFirst(".p-novel__author a"):text()})
-		novelPage:setTitle(document:selectFirst(".p-novel__title"):text())
-
-		-- Description
-		local e = document:selectFirst(".p-novel__summary")
-		if e then
-			novelPage:setDescription(tostring(e):gsub("<br%s*/?>", "\n")
-			:gsub("<[^>]->", "")                     
-			:gsub("\n%s*\n+", "\n\n")       
-			:gsub("^%s+", ""):gsub("%s+$", ""))
-		end
-		-- Chapters
-		if loadChapters then
-			local chapters = {}
-			local totalPages = getTotalPages(document)
-			for page = 1, totalPages do
-				local pageURL = novelURL .. "?p=" .. page
-
-				local pageDocument = GETDocument(passageURL .. pageURL)
-				map(pageDocument:select(".p-eplist__sublist"), function(v)
-					local chap = NovelChapter()
-					local title = v:selectFirst("a"):text()
-					local link = v:selectFirst("a"):attr("href")
-					local release = v:selectFirst(".p-eplist__update"):text()
-
-					chap:setTitle(title)
-					chap:setLink(link)
-					chap:setRelease(release)
-					table.insert(chapters, chap)
-				end)
-			end
-			novelPage:setChapters(AsList(chapters))
-		end
-
-		return novelPage
-	end,
-	shrinkURL = shrinkURL,
-	expandURL = expandURL,
-	getTotalPages = getTotalPages,
-	search = search,
+	}
 }
