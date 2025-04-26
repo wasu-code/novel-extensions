@@ -1,4 +1,4 @@
--- {"id":102555,"ver":"1.0.3","libVer":"1.0.0","author":""}
+-- {"id":102555,"ver":"1.0.4","libVer":"1.0.0","author":""}
 
 local json = Require("dkjson")
 
@@ -9,8 +9,17 @@ local id = 102555  -- Update with your extension ID
 --- Base URL of the extension.
 local baseURL = "https://wtr-lab.com/"
 
+---  Api URL of the ChapterData.
+local apiUrl =   "https://wtr-lab.com/api/reader/get"
+
+
 --- URL of the logo.
 local imageURL = "https://i.imgur.com/ObQtFVW.png"
+
+
+--MediaType for JSON
+local mtype = MediaType("application/json; charset=utf-8")
+
 
 --- Cloudflare protection status.
 local hasCloudFlare = false
@@ -82,10 +91,21 @@ end
 local function getPassage(chapterURL)
     local url = expandURL(chapterURL, KEY_CHAPTER_URL)
     local doc = GETDocument(url)
-    local script = doc:selectFirst("script#__NEXT_DATA__"):html()
+    local script = doc:selectFirst("#__NEXT_DATA__"):html()
     local data = json.decode(script)
-    local content = data.props.pageProps.serie.chapter_data.data.body
-    local html = table.concat(map(content, function(v) return "<p>" .. v .. "</p>" end))
+    local content = data.props.pageProps.serie
+    local payload = {
+        chapter_id = content.chapter.id,
+        language = "en",
+        raw_id = content.chapter.raw_id,
+    }
+    local body = RequestBody(json.encode(payload), mtype)
+    local headers = HeadersBuilder():add("Content-Type", "application/json"):add("Referer", url):build()
+    local response = Request(POST(apiUrl, headers, body))
+    local responseBody = response:body():string()
+    local jdata = json.decode(responseBody)
+    local htmlContent = jdata.data.data.body
+    local html = table.concat(map(htmlContent, function(v) return "<p>" .. v .. "</p>" end))
     local doc = Document(html)
     -- Traverse the document to remove empty <p> tags
     local toRemove = {}
