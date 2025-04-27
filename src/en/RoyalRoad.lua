@@ -397,7 +397,6 @@ return {
 			-- remove whitespace at the start of the paragraph
 			if v:tagName() == "p" or (v:parent():tagName() == "p" and v:elementSiblingIndex() == 0) then
 				local nodes = v:textNodes()
-				print(nodes)
 				if not nodes:isEmpty() then
 					local tn = nodes:get(0)
 					local o = tn:text()
@@ -417,6 +416,10 @@ return {
 
 			if v:hasAttr("align") then
 				v:removeAttr("align")
+			end
+
+			if v:hasAttr("class") then
+				v:removeAttr("class")
 			end
 
 			-- manually remove all style attributes except the useful ones
