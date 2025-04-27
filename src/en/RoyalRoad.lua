@@ -1,8 +1,9 @@
--- {"id":36833,"ver":"1.0.16","libVer":"1.0.0","author":"TechnoJo4","dep":["url>=1.0.0","CommonCSS>=1.0.0"]}
+-- {"id":36833,"ver":"1.0.17","libVer":"1.0.0","author":"TechnoJo4","dep":["url>=1.0.0","CommonCSS>=1.0.0","unhtml>=1.0.0"]}
 
 local baseURL = "https://www.royalroad.com"
-local qs = Require("url").querystring
 
+local qs = Require("url").querystring
+local HTMLToString = Require("unhtml").HTMLToString
 local css = Require("CommonCSS").table
 
 -- LUA ARRAYS ONLY KNOW HOW TO COUNT FROM 0 or 1
@@ -328,40 +329,7 @@ return {
 			table.insert(tags, cw:text())
 		end)
 
-		local function trim(s)
-			return s:match("^%s*(.-)%s*$")
-		end
-
-		local function HTMLToString(text)
-			text = text:gsub(">%s+<", "><")
-			text = text:gsub("&nbsp;", " ")
-
-			local brTag = "%s*<[Bb][Rr]%s*(/?)%s*>%s*"
-			local pattern2 = brTag .. brTag .. "(" .. brTag .. ")*"
-
-			text = text:gsub(pattern2, "[[BRBR]]")
-			text = text:gsub(brTag, "\n")
-			text = text:gsub("</[Pp]>", "\n\n")
-
-			local hrTag = "%s*<[Hh][Rr][^>]*>%s*"
-			text = text:gsub(hrTag, "\n\n---\n\n")
-
-			text = text:gsub("<[^>]+>", "")
-
-			text = text:gsub("%[%[BRBR%]%]", "\n\n")
-			text = text:gsub("\n*%-%-%-%\n*", "\n\n---\n\n")
-
-			local lines = {}
-			for line in (text .. "\n"):gmatch("(.-)\n") do
-				table.insert(lines, trim(line))
-			end
-			text = table.concat(lines, "\n")
-			text = trim(text)
-
-			return text
-		end
-
-		local description = HTMLToString(tostring(info:selectFirst(".description .hidden-content")))
+		local description = HTMLToString(info:selectFirst(".description .hidden-content"))
 
 		local text = function(v) return v:text() end
 		local novel = NovelInfo {
