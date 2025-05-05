@@ -1,10 +1,11 @@
--- {"id": 90001, "ver": "1.0.0", "libVer": "1.0.0", "author": "ChatGPT", "dep": ["url>=1.0.0", "CommonCSS>=1.0.0"]}
+-- {"id": 90001, "ver": "1.0.0", "libVer": "1.0.0", "author": "wasu", "dep": ["url>=1.0.0", "CommonCSS>=1.0.0"]}
 
 local baseURL = "https://www.pokatne.pl"
 local qs = Require("url").querystring
 local css = Require("CommonCSS").table
 
 local PAGE_SIZE = 30
+local DEFAULT_COVER = "https://www.pokatne.pl/images/noav.png"
 
 -- Filter IDs
 local FID_CAT = 2
@@ -26,10 +27,34 @@ end
 local function parseListing(doc)
   return map(doc:select("article"), function(card)
     local a = card:selectFirst(".snippet-title-small a")
+    local imageUrl = card:selectFirst("img"):attr("data-src") ~= "" and card:selectFirst("img"):attr("data-src") or DEFAULT_COVER
     return Novel {
       title = a:text(),
       link = shrinkURL(a:attr("href")),
-      imageURL = card:selectFirst("img"):attr("data-src")
+      imageURL = imageUrl
+    }
+  end)
+end
+
+local function parseConfessions(doc)
+  return map(doc:select(".caption"), function(card)
+    local a = card:selectFirst("h3 a")
+    return Novel {
+      title = a:text(),
+      link = shrinkURL(a:attr("href")),
+      imageURL = DEFAULT_COVER
+    }
+  end)
+end
+
+local function parseAudiobooks(doc)
+  return map(doc:select(".thumbnail"), function(card)
+    local a = card:selectFirst("h3 a")
+    return Novel {
+      title = a:text(),
+      link = shrinkURL(a:attr("href")),
+      imageURL = card:selectFirst("img"):attr("src"),
+      authors = {card:selectFirst(".caption > a")}
     }
   end)
 end
@@ -41,7 +66,8 @@ local function parseInbox(doc)
       Novel {
         title = "Zaloguj się w WebView",
         link = "/secure/login",
-        description = "Musisz się zalogować by wyświetlić opowiadania od obserwowanych autorów."
+        description = "Musisz się zalogować (używając WebView) by wyświetlić opowiadania od obserwowanych autorów.",
+        imageURL = DEFAULT_COVER
       }
     }
   else
@@ -50,6 +76,7 @@ local function parseInbox(doc)
       return Novel {
         title = a:text():gsub('^"(.-)"$', '%1'),
         link = shrinkURL(a:attr("href")),
+        imageURL = DEFAULT_COVER
       }
     end)
   end
@@ -71,9 +98,6 @@ local function parseNovel(url, loadChapters)
 
   local title = isSeries and doc:selectFirst(".series a"):text() or doc:selectFirst("header h1"):text()
 
-  local descElement = doc:selectFirst(".disclaimer")
-  local description = descElement ~= nil and descElement:text() or "No description available"
-
   local status
   if isSeries then
       local seriesCompleted = doc:selectFirst('[data-original-title="Seria zakończona"]') ~= nil
@@ -82,14 +106,17 @@ local function parseNovel(url, loadChapters)
       status = NovelStatus.COMPLETED
   end
 
+  local authorElem = doc:selectFirst("a[itemprop=author]")
+  local descElement = doc:selectFirst(".disclaimer")
+
   local info = NovelInfo {
     title = title,
     imageURL = doc:selectFirst('meta[property="og:image"]'):attr("content"),
-    description = description,
-    authors = { doc:selectFirst("a[itemprop=author]"):text() },
     tags = map(doc:select(".tags li a"), function(v) return v:text() end),
     status = status
   }
+  if authorElem then info:setAuthors({authorElem:text()}) end
+  if descElement then info:setDescription(descElement:text()) end
 
   if loadChapters then
     local chapters = {}
@@ -110,7 +137,7 @@ local function parseNovel(url, loadChapters)
         NovelChapter {
           title = title,
           link = url,
-          release = doc:selectFirst(".publish_date"):text()
+          release = (doc:selectFirst(".publish_date") and doc:selectFirst(".publish_date"):text()) or nil
         }
       }
     end
@@ -125,7 +152,7 @@ return {
   id = 90001,
   name = "Pokatne",
   baseURL = baseURL,
-  imageURL = "https://www.pokatne.pl/favicon.ico",
+  imageURL = "https://www.pokatne.pl/images/apple-touch-icon.png",
   chapterType = ChapterType.HTML,
 
   listings = {
@@ -158,28 +185,40 @@ return {
 
       return parseListing(GETDocument(urlToUse))
     end),
-    Listing("Najulubiensze", true, function(data)
-      local offset = data[PAGE] * PAGE_SIZE
+    Listing("Najulubiensze (najczęściej w ulubionych)", true, function(data)
+      local offset = (data[PAGE] - 1) * PAGE_SIZE
       return parseListing(GETDocument(baseURL .. "/opowiadania/najulubiensze/" .. offset))
     end),
-    -- Listing("Artykuły", true, function(data)
-    --   local offset = data[PAGE] * PAGE_SIZE
-    --   return parseListing(GETDocument(baseURL .. "/artykuly/" .. offset))
-    -- end),
-    -- Listing("Wyznania", true, function(data)
-    --   local offset = data[PAGE] * PAGE_SIZE
-    --   return parseListing(GETDocument(baseURL .. "/wyznania/" .. offset))
-    -- end),
+    Listing("Najlepsze (najwyżej oceniane)", true, function(data)
+      local offset = (data[PAGE] - 1) * PAGE_SIZE
+      return parseListing(GETDocument(baseURL .. "/opowiadania/najulubiensze/" .. offset))
+    end),
+    Listing("Poczekalnia", true, function(data)
+      local offset = (data[PAGE] - 1) * PAGE_SIZE
+      return parseListing(GETDocument(baseURL .. "/poczekalnia/" .. offset))
+    end),
+    Listing("Audiobooki", true, function(data)
+      local offset = (data[PAGE] - 1) * PAGE_SIZE
+      return parseAudiobooks(GETDocument(baseURL .. "/audiobooki/" .. offset))
+    end),
+    Listing("Artykuły", true, function(data)
+      local offset = (data[PAGE] - 1) * PAGE_SIZE
+      return parseListing(GETDocument(baseURL .. "/artykuly/" .. offset))
+    end),
+    Listing("Wyznania", true, function(data)
+      local offset = (data[PAGE] - 1) * PAGE_SIZE
+      return parseConfessions(GETDocument(baseURL .. "/wyznania/" .. offset))
+    end),
     Listing("Inbox", false, function(data)
       return parseInbox(GETDocument(baseURL .. "/inbox/administracja"))
-    end)
+    end),
   },
 
   searchFilters = {
-    DropdownFilter(FID_CAT, "Zbiór", {"Zbiór główny", "Poczekalnia", "Wszystko"}), -- all, 1, 4
-    TriStateFilter(FID_WARNING, "Kontrowersyjna treść"), -- all, 0, 1
-    TriStateFilter(FID_SERIES, "Część serii"), -- all, 0, 1
-    TextFilter(FID_TAG, "Tagi (łączone znakiem +)"), -- tag1+tag%20more
+    DropdownFilter(FID_CAT, "Zbiór", {"Zbiór główny", "Poczekalnia", "Wszystko"}),
+    TriStateFilter(FID_WARNING, "Kontrowersyjna treść"), 
+    TriStateFilter(FID_SERIES, "Część serii"),
+    TextFilter(FID_TAG, "Tagi (łączone znakiem +)"),
     TextFilter(FID_LECTURE_TIME, "Czas lektury (w minutach, format: ?-?)"),
     TextFilter(FID_MIN_RATING, "Minimalna ocena ?/10"),
     TextFilter(FID_YEAR, "Rok publikacji"),
@@ -189,7 +228,6 @@ return {
   expandURL = expandURL,
 
   parseNovel = parseNovel,
-
   getPassage = function(url)
     local doc = GETDocument(expandURL(url))
     local story = doc:selectFirst("div.story article .content")
