@@ -83,7 +83,7 @@ local function parseInbox(doc)
 end
 
 local function parseSearch(doc)
-  return map(doc:select("a"), function(card)
+  return map(doc:select('a[data-type="Opowiadanie"]'), function(card)
     return Novel {
       title = card:selectFirst("h4"):text(),
       link = shrinkURL(card:selectFirst("a"):attr("href")),
@@ -238,10 +238,19 @@ return {
   search = function(data)
     if data[PAGE] ~= 1 then return {} end -- search doesn't increment
 
+    local query = data[QUERY]
+
+    -- if query prefixed with "author:" or "autor:" display all works from given author
+    if query:sub(1, 7) == "author:" or query:sub(1, 7) == "autor:" then
+      local authorName = query:sub(8)
+      local authorUrl = baseURL .. "/autorzy/" .. authorName
+      return parseListing(GETDocument(authorUrl))
+    end
+
     local document = RequestDocument(
         POST("https://www.pokatne.pl/ajax/auto_search", nil,
             FormBodyBuilder()
-                :add("s", data[QUERY])
+                :add("s", query)
                 :build()
         )
     )
