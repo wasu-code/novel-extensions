@@ -1,16 +1,27 @@
--- {"id": 345674, "ver": "1.0.0", "libVer": "1.0.0", "author": "wasu", "dep": ["url>=1.0.0", "CommonCSS>=1.0.0"]}
--- https://www.reddit.com/svc/shreddit/community-more-posts/best/?after=dDNfMWhxdXA5aQ%3D%3D&t=DAY&name=shortstory&navigationSessionId=f73b84eb-6db4-4226-8559-555e50cd9320&feedLength=28&distance=25
+-- {"id": 345674, "ver": "1.0.0", "libVer": "1.0.0", "author": "wasu", "dep": []}
 
 -- TODO fix covers
 
 local baseURL = "https://www.reddit.com"
 
 local SNOO_HI = "https://www.redditstatic.com/shreddit/assets/snoo_wave.png"
-local DEFAULT_COVER = "https://redditinc.com/hs-fs/hubfs/Reddit%20Inc/Graphics/Headers/Desktop/RedditInc_Header_Brand.png?width=300&height=300"
+local DEFAULT_COVER = "https://redditinc.com/hubfs/Reddit%20Inc/Blog/Imported_Blog_Media/BlogHeader_PortalSnoo_002.png"
+local DEFAULT_COVER2 = "https://redditinc.com/hubfs/Reddit%20Inc/Blog/Imported_Blog_Media/BlogHeader_PortalSnoo_003.jpg"
 
 local NEXT_PAGE_URL -- will hold next page url (shrunken) with token param
+
+-- Filters
 local FID_SORT = 2
 local SORT_VALUES = {"new", "best", "hot", "top", "rising"}
+
+-- Settings (holds custom subreddits/listings)
+local settings = {
+  [1] = "",
+  [2] = "",
+  [3] = "",
+  [4] = "",
+  [5] = "",
+}
 
 local function shrinkURL(url)
   return url:gsub("^https://www.reddit.com/?", "")
@@ -25,12 +36,16 @@ local function parseListing(doc)
     return Novel {
       title = card:text(),
       link = shrinkURL(card:attr("href")),
-      imageUrl = DEFAULT_COVER
+      imageURL = DEFAULT_COVER
     }
   end)
 end
 
 local function listing(data, query)
+  if not query or query == "" then
+    error("Subreddit not provided (set subreddit name in extension's settings)")
+  end
+
   local page = data[PAGE]
   local sort = SORT_VALUES[data[FID_SORT] + 1]
 
@@ -53,7 +68,7 @@ local function parseNovel(novelUrl, loadChapters)
     title = doc:selectFirst('h1[slot="title"]'):text(),
     description = descElem and descElem:text() or "THIS POST DOES NOT CONTAIN TEXT",
     authors = {doc:selectFirst(".author-name"):text()},
-    imageUrl = SNOO_HI
+    imageURL = DEFAULT_COVER2
   }
 
   if loadChapters then
@@ -65,6 +80,18 @@ local function parseNovel(novelUrl, loadChapters)
     })
   end
   return info
+end
+
+local function gatherCustomListings()
+  return map(settings, function(value, index)
+    return Listing("Custom subreddit " .. index, true, function(data) return listing(data, settings[index]) end)
+  end)
+end
+
+local function gatherCustomSettings()
+  return map(settings, function(value, index)
+    return TextFilter(index, "Custom subreddit " .. index .. " (without /r prefix)")
+  end)
 end
 
 return {
@@ -81,6 +108,7 @@ return {
 	listings = {
     Listing("r/shortstories", true, function(data) return listing(data, "shortstories") end),
     Listing("r/shortstory", true, function(data) return listing(data, "shortstory") end),
+    table.unpack(gatherCustomListings())
   },
 
 	parseNovel = parseNovel,
@@ -99,7 +127,8 @@ return {
     DropdownFilter(FID_SORT, "Sorting", SORT_VALUES),
 	},
 
-	-- settings = settingsModel,
-	-- Required if [settings] is not empty
-	-- updateSetting = updateSetting,
+  settings = gatherCustomSettings(),
+	updateSetting = function(id, value)
+    settings[id] = value
+  end,
 }
