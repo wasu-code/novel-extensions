@@ -63,12 +63,16 @@ end
 
 local function parseNovel(novelUrl, loadChapters)
   local doc = GETDocument(expandURL(novelUrl))
+
   local descElem = doc:selectFirst('div[slot="text-body"] p')
+  local genreElem = doc:selectFirst('[slot="post-flair"] .flair-content')
+
   local info = NovelInfo {
     title = doc:selectFirst('h1[slot="title"]'):text(),
     description = descElem and descElem:text() or "THIS POST DOES NOT CONTAIN TEXT",
     authors = {doc:selectFirst(".author-name"):text()},
-    imageURL = DEFAULT_COVER2
+    imageURL = DEFAULT_COVER2,
+    genres = genreElem and {genreElem:text()} or {}
   }
 
   if loadChapters then
