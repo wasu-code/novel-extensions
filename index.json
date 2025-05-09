@@ -8,8 +8,8 @@
       "website": ""
     },
     {
-      "id": 3642028,
-      "name": "wasu",
+      "id": -706869138,
+      "name": "wasu-code",
       "desc": "Worked on Pokatne, Reddit",
       "imageURL": "",
       "website": ""
@@ -121,7 +121,7 @@
       "lang": "pl",
       "ver": "1.0.0",
       "libVer": "1.0.0",
-      "md5": "c76a49c832134644ac0639acd282fc44701b3c46360dc1fe4fc74a7888c80ea2",
+      "md5": "2960b42875052199e638879c8a525479d324c8d79cbf40a6b59835a657d5c927",
       "type": "LuaScript"
     },
     {
@@ -132,7 +132,7 @@
       "lang": "all",
       "ver": "1.0.0",
       "libVer": "1.0.0",
-      "md5": "fddbb0069dc64b9a940ced32e481a5baaca826151b4615b6abfd23bd2d59ecd4",
+      "md5": "3e3ae21d3baa6d3b82830935de652bb16976df3d01e16ca8b6e3cce1c94c93a3",
       "type": "LuaScript"
     }
   ],
