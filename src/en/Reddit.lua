@@ -1,4 +1,4 @@
--- {"id": 345674, "ver": "1.0.0", "libVer": "1.0.0", "author": "wasu", "dep": ["url>=1.0.0"]}
+-- {"id":119971151172, "ver": "1.0.0", "libVer": "1.0.0", "author": "wasu", "dep": ["url>=1.0.0"]}
 
 local qs = Require("url").querystring
 
@@ -115,7 +115,7 @@ end
 
 return {
 	-- Required
-	id = 345674,
+	id = 119971151172,
 	name = "Reddit",
 	baseURL = baseURL,
   imageURL = SNOO_HI,
