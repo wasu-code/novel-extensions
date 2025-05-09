@@ -1,8 +1,8 @@
--- {"id": 90001, "ver": "1.0.0", "libVer": "1.0.0", "author": "wasu", "dep": ["url>=1.0.0", "CommonCSS>=1.0.0"]}
+-- {"id": 90001, "ver": "1.0.0", "libVer": "1.0.0", "author": "wasu", "dep": ["url>=1.0.0"]}
+
+local qs = Require("url").querystring
 
 local baseURL = "https://www.pokatne.pl"
-local qs = Require("url").querystring
-local css = Require("CommonCSS").table
 
 local PAGE_SIZE = 30
 local DEFAULT_COVER = "https://www.pokatne.pl/images/noav.png"
@@ -231,7 +231,7 @@ return {
   getPassage = function(url)
     local doc = GETDocument(expandURL(url))
     local story = doc:selectFirst("div.story article .content")
-    return pageOfElem(story, false, css)
+    return pageOfElem(story, false)
   end,
 
   isSearchIncrementing = false,
