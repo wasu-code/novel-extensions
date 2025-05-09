@@ -1,4 +1,4 @@
--- {"id": 119971151171, "ver": "1.0.0", "libVer": "1.0.0", "author": "wasu", "dep": ["url>=1.0.0"]}
+-- {"id": 23119211, "ver": "1.0.0", "libVer": "1.0.0", "author": "wasu", "dep": ["url>=1.0.0"]}
 
 local qs = Require("url").querystring
 
@@ -149,7 +149,7 @@ local function parseNovel(url, loadChapters)
 end
 
 return {
-  id = 119971151171,
+  id = 23119211,
   name = "Pokatne",
   baseURL = baseURL,
   imageURL = "https://www.pokatne.pl/images/apple-touch-icon.png",
