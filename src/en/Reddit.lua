@@ -3,6 +3,12 @@
 local qs = Require("url").querystring
 
 local baseURL = "https://www.reddit.com"
+local css = [[
+pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+]]
 
 local SNOO_HI = "https://www.redditstatic.com/shreddit/assets/snoo_wave.png"
 local DEFAULT_COVER = "https://redditinc.com/hubfs/Reddit%20Inc/Blog/Imported_Blog_Media/BlogHeader_PortalSnoo_002.png"
@@ -130,7 +136,7 @@ return {
 	getPassage = function (chapterUrl)
     local doc = GETDocument(expandURL(chapterUrl))
     local story = doc:selectFirst('div[slot="text-body"]')
-    return pageOfElem(story)
+    return pageOfElem(story, false, css)
   end,
 
 	hasSearch = true,
