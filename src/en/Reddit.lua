@@ -1,6 +1,6 @@
--- {"id": 345674, "ver": "1.0.0", "libVer": "1.0.0", "author": "wasu", "dep": []}
+-- {"id": 345674, "ver": "1.0.0", "libVer": "1.0.0", "author": "wasu", "dep": ["url>=1.0.0"]}
 
--- TODO fix covers
+local qs = Require("url").querystring
 
 local baseURL = "https://www.reddit.com"
 
@@ -13,6 +13,7 @@ local NEXT_PAGE_URL -- will hold next page url (shrunken) with token param
 -- Filters
 local FID_SORT = 2
 local SORT_VALUES = {"new", "best", "hot", "top", "rising"}
+local FID_FLAIR = 3
 
 -- Settings (holds custom subreddits/listings)
 local settings = {
@@ -48,8 +49,16 @@ local function listing(data, query)
 
   local page = data[PAGE]
   local sort = SORT_VALUES[data[FID_SORT] + 1]
+  local flair = data[FID_FLAIR]
 
-  local url = "/svc/shreddit/community-more-posts/".. sort .."/?name=" .. query
+  local params = {
+    name = query
+  }
+  if flair ~= "" then
+    params.f = '"' .. flair .. '"'
+  end
+
+  local url = qs(params, "/svc/shreddit/community-more-posts/".. sort .. "/")
   if page > 1 then
     url = NEXT_PAGE_URL
   end
@@ -129,6 +138,7 @@ return {
   search = function(data) return listing(data, data[QUERY]) end,
   searchFilters = {
     DropdownFilter(FID_SORT, "Sorting", SORT_VALUES),
+    TextFilter(FID_FLAIR, "Flair")
 	},
 
   settings = gatherCustomSettings(),
