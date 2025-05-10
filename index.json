@@ -121,7 +121,7 @@
       "lang": "pl",
       "ver": "1.0.0",
       "libVer": "1.0.0",
-      "md5": "2960b42875052199e638879c8a525479d324c8d79cbf40a6b59835a657d5c927",
+      "md5": "fc6c616a0a604fbea08108ded45169e1bd92ca99e83dcf6143254cc8409ec72a",
       "type": "LuaScript"
     },
     {
@@ -130,9 +130,9 @@
       "fileName": "Reddit",
       "imageURL": "https://www.redditstatic.com/shreddit/assets/snoo_wave.png",
       "lang": "all",
-      "ver": "1.0.0",
+      "ver": "1.0.1",
       "libVer": "1.0.0",
-      "md5": "3e3ae21d3baa6d3b82830935de652bb16976df3d01e16ca8b6e3cce1c94c93a3",
+      "md5": "24a0b8ac0193f988e8a934a7cab3bdd5befb92ed77968c1ce08f5827635de5e2",
       "type": "LuaScript"
     }
   ],

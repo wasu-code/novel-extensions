@@ -1,4 +1,4 @@
--- {"id": 23119212, "ver": "1.0.0", "libVer": "1.0.0", "author": "wasu-code", "dep": ["url>=1.0.0"]}
+-- {"id": 23119212, "ver": "1.0.1", "libVer": "1.0.0", "author": "wasu-code", "dep": ["url>=1.0.0"]}
 
 local qs = Require("url").querystring
 
@@ -113,6 +113,28 @@ local function gatherCustomSettings()
   end)
 end
 
+local function search(data)
+  local query = data[QUERY]
+
+  if query:match("^r/") then
+    -- If the query starts with "r/", treat it as a subreddit name
+    return listing(data, query:sub(3)) -- Remove the "r/" prefix
+  elseif query:match("^https?://[w.]*reddit.com/") then
+    -- If the query is a Reddit URL, extract the path and use it
+    local subredditPath = query:match("^https?://[w.]*reddit.com/(.+)")
+    if data[PAGE] > 1 then return {} end -- Don't double the result
+    return {
+      Novel {
+      title = "Click to load",
+      link = subredditPath,
+      imageURL = DEFAULT_COVER
+    }
+    }
+  else
+    error("Invalid query format. Expected: 'r/subreddit' or a valid Reddit URL.")
+  end
+end
+
 return {
 	-- Required
 	id = 23119212,
@@ -141,7 +163,7 @@ return {
 
 	hasSearch = true,
   isSearchIncrementing = true,
-  search = function(data) return listing(data, data[QUERY]) end,
+  search = search,
   searchFilters = {
     DropdownFilter(FID_SORT, "Sorting", SORT_VALUES),
     TextFilter(FID_FLAIR, "Flair")
