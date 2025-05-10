@@ -178,8 +178,8 @@ return {
       -- if filters are present listing doesn't increment
       if next(filters) and data[PAGE] ~= 1 then return {} end
 
-      local filterUrl = qs(filters, baseURL .. "/opowiadania")
-      local paginationUrl = baseURL .. "/opowiadania/" .. offset
+      local filterUrl = qs(filters, expandURL("opowiadania"))
+      local paginationUrl = expandURL("opowiadania/" .. offset)
       -- either uses filters or pagination
       local urlToUse = next(filters) and filterUrl or paginationUrl
 
@@ -187,30 +187,30 @@ return {
     end),
     Listing("Najulubiensze (najczęściej w ulubionych)", true, function(data)
       local offset = (data[PAGE] - 1) * PAGE_SIZE
-      return parseListing(GETDocument(baseURL .. "/opowiadania/najulubiensze/" .. offset))
+      return parseListing(GETDocument(expandURL("opowiadania/najulubiensze/" .. offset)))
     end),
     Listing("Najlepsze (najwyżej oceniane)", true, function(data)
       local offset = (data[PAGE] - 1) * PAGE_SIZE
-      return parseListing(GETDocument(baseURL .. "/opowiadania/najulubiensze/" .. offset))
+      return parseListing(GETDocument(expandURL("opowiadania/najulubiensze/" .. offset)))
     end),
     Listing("Poczekalnia", true, function(data)
       local offset = (data[PAGE] - 1) * PAGE_SIZE
-      return parseListing(GETDocument(baseURL .. "/poczekalnia/" .. offset))
+      return parseListing(GETDocument(expandURL("poczekalnia/" .. offset)))
     end),
     Listing("Audiobooki", true, function(data)
       local offset = (data[PAGE] - 1) * PAGE_SIZE
-      return parseAudiobooks(GETDocument(baseURL .. "/audiobooki/" .. offset))
+      return parseAudiobooks(GETDocument(expandURL("audiobooki/" .. offset)))
     end),
     Listing("Artykuły", true, function(data)
       local offset = (data[PAGE] - 1) * PAGE_SIZE
-      return parseListing(GETDocument(baseURL .. "/artykuly/" .. offset))
+      return parseListing(GETDocument(expandURL("artykuly/" .. offset)))
     end),
     Listing("Wyznania", true, function(data)
       local offset = (data[PAGE] - 1) * PAGE_SIZE
-      return parseConfessions(GETDocument(baseURL .. "/wyznania/" .. offset))
+      return parseConfessions(GETDocument(expandURL("wyznania/" .. offset)))
     end),
     Listing("Inbox", false, function(data)
-      return parseInbox(GETDocument(baseURL .. "/inbox/administracja"))
+      return parseInbox(GETDocument(expandURL("inbox/administracja")))
     end),
   },
 
@@ -243,7 +243,7 @@ return {
     -- if query prefixed with "author:" or "autor:" display all works from given author
     if query:sub(1, 7) == "author:" or query:sub(1, 7) == "autor:" then
       local authorName = query:sub(8)
-      local authorUrl = baseURL .. "/autorzy/" .. authorName
+      local authorUrl = expandURL("autorzy/" .. authorName)
       return parseListing(GETDocument(authorUrl))
     end
 
