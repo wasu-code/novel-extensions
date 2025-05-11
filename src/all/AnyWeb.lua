@@ -1,13 +1,18 @@
--- {"id": 23119214, "ver": "0.0.2", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=1.0.0", "url"]}
+-- {"id": 23119214, "ver": "1.0.0", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=1.0.0", "url"]}
 
 local parseArticle = Require("Readability").parse
 local qs = Require("url").querystring
 
+local novelUpdatesURL = "https://www.novelupdates.com"
+
+-- Filters IDs
+local FID_SORT = 2
+local FID_ORDER = 3
+local FID_STATUS = 4
+
 local text = function(v)
     return v:text()
 end
-
-local novelUpdatesURL = "https://www.novelupdates.com"
 
 local function parseNovelUpdatesChapters(doc)
   if not doc:selectFirst("#logged_avatar") then
@@ -165,13 +170,27 @@ local function search(data)
   end
 end
 
-local function parseListing(url, data)
-  return {}
+local function parseListing(data)
+  local doc = GETDocument(qs({
+    sort = data[FID_SORT] + 1,
+    order = data[FID_ORDER] and 2 or 1,
+    status = data[FID_STATUS] + 1,
+    pg = data[PAGE]
+  }, novelUpdatesURL .. "/novelslisting/"))
+
+  return map(doc:select(".search_main_box_nu"), function(card)
+    local a = card:selectFirst(".search_title > a[href]")
+    return Novel {
+      title = a:text(),
+      link = a:attr("href"),
+      imageURL = card:selectFirst(".search_img_nu > img[src]"):attr("src")
+    }
+  end)
 end
 
 return {
 	id = 23119214,
-	name = "AnyWeb",
+	name = "AnyWeb (+ NovelUpdates)",
 	baseURL = "",
 	imageURL = "https://novelupdates.com/appicon.png",
   chapterType = ChapterType.HTML,
@@ -181,7 +200,7 @@ return {
 	expandURL = function(url) return url end,
 
   listings = {
-    Listing("Example", true, function(data) return parseListing("https://www.novelupdates.com/novelslisting/?sort=7&order=1&status=1", data) end),
+    Listing("Series", true, parseListing),
   },
 	parseNovel = parseNovel,
 	getPassage = getPassage,
@@ -189,4 +208,24 @@ return {
 	hasSearch = true,
 	isSearchIncrementing = true,
 	search = search,
+
+  searchFilters = {
+    DropdownFilter(FID_SORT, "Sort by", {
+      "Frequency", -- 1
+      "Rank", -- 2
+      "Rating", -- 3
+      "Readers", -- 4
+      "Chapters", -- 5
+      "Reviews", -- 6
+      "Title", -- 7
+      "Last Updated" -- 8
+    }),
+	  SwitchFilter(FID_ORDER, "Descending"), -- 1: "Ascending", 2: "Descending"
+    DropdownFilter(FID_STATUS, "Status", {
+      "All", -- 1
+      "Completed", -- 2
+      "Ongoing", -- 3
+      "Hiatus" -- 4
+    }),
+	},
 }
