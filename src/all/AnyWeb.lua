@@ -101,7 +101,7 @@ local function parseWebsiteNovel(novelUrl, loadChapters)
   local author = doc:selectFirst("meta[name='author']") and doc:selectFirst("meta[name='author']"):attr("content") or nil
 
   local info = NovelInfo {
-    title = title,
+    title = title and title:gsub("%s*[%-%|—]%s*.*$", "") or title,
     description = description,
     imageURL = imageURL,
     authors = author and { author } or nil
