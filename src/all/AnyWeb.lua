@@ -1,4 +1,4 @@
--- {"id": 23119214, "ver": "0.0.1", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=0.0.2"]}
+-- {"id": 23119214, "ver": "0.0.2", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=1.0.0"]}
 
 local parseArticle = Require("Readability").parse
 

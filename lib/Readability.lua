@@ -1,4 +1,4 @@
--- {"ver":"0.0.2","author":"wasu-code","dep":[]}
+-- {"ver":"1.0.0","author":"wasu-code","dep":[]}
 
 --- Readability Library
 -- This library processes an HTML document using Mozilla's Readability.js.
