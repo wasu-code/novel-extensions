@@ -60,7 +60,7 @@ local function parseNUNovel(novelUrl, loadChapters)
 
   local info = NovelInfo {
     title = doc:selectFirst(".seriestitlenu"):text(),
-    imageURL = doc:selectFirst("div.seriesimg img[src]") and doc:selectFirst("div.seriesimg img[src]"):attr("src") or nil, -- TODO why not working
+    imageURL = doc:selectFirst(".seriesimg img[src], .serieseditimg img"):attr("src"),
     description = doc:selectFirst("#editdescription"):text(),
     alternativeTitles = map(
       (function()
