@@ -5,6 +5,7 @@ REM Define the array of commands
 set c[1]=java -jar extension-tester.jar --generate-index
 set c[2]=java -jar extension-tester.jar src/pl/Pokatne.lua
 set c[3]=java -jar extension-tester.jar src/en/Reddit.lua
+set c[4]=java -jar extension-tester.jar src/all/AnyWeb.lua
 
 REM Check for a command-line argument
 if "%1" neq "" (

@@ -1,26 +1,10 @@
 {
   "Lua.diagnostics.globals": [
-    "Require",
-    "Novel",
-    "ChapterType",
-    "Listing",
-    "GETDocument",
-    "NovelInfo",
-    "NovelStatus",
-    "NovelChapter",
-    "AsList",
     "pageOfElem",
-    "map",
-    "PAGE",
-    "QUERY",
-    "FormBodyBuilder",
-    "POST",
-    "RequestDocument",
-    "TextFilter",
-	  "SwitchFilter",
-	  "CheckboxFilter",
-	  "TriStateFilter",
-	  "RadioGroupFilter",
-	  "DropdownFilter"
-  ]
+    "ChapterType",
+    "Novel"
+  ],
+    "diagnostics.disable": [
+        "missing-fields"
+    ]
 }

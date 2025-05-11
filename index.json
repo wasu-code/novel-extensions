@@ -10,7 +10,7 @@
     {
       "id": -706869138,
       "name": "wasu-code",
-      "desc": "Worked on Pokatne, Reddit",
+      "desc": "Worked on AnyWeb (+ NovelUpdates), Pokatne, Readability, Reddit",
       "imageURL": "",
       "website": ""
     },
@@ -76,6 +76,12 @@
       "hash": "84f4fd7edfd462ff7bea853a139eb0312767de0e83fca4e68bbdb98a0b052b38"
     },
     {
+      "name": "Readability",
+      "ver": "1.0.0",
+      "url": null,
+      "hash": "430751e92df437e0866f8623b5e0cd588725338e9882be2905b1ae9ec57b0738"
+    },
+    {
       "name": "WWVolare",
       "ver": "1.2.2",
       "url": null,
@@ -132,7 +138,18 @@
       "lang": "all",
       "ver": "1.0.1",
       "libVer": "1.0.0",
-      "md5": "24a0b8ac0193f988e8a934a7cab3bdd5befb92ed77968c1ce08f5827635de5e2",
+      "md5": "aec63c695dfe825965576c455534ac0c3dba9b467e318561145794462616a365",
+      "type": "LuaScript"
+    },
+    {
+      "id": 23119214,
+      "name": "AnyWeb (+ NovelUpdates)",
+      "fileName": "AnyWeb",
+      "imageURL": "https://novelupdates.com/appicon.png",
+      "lang": "all",
+      "ver": "1.0.0",
+      "libVer": "1.0.0",
+      "md5": "f28cf4c88d36d7e52f42d6fd429649b2b61c994092283c4f260bcceda6f6e589",
       "type": "LuaScript"
     }
   ],
