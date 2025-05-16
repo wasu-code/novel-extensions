@@ -190,7 +190,7 @@ end
 
 return {
 	id = 23119214,
-	name = "AnyWeb (+ NovelUpdates)",
+	name = "AnyWeb (+NovelUpdates)",
 	baseURL = "",
 	imageURL = "https://novelupdates.com/appicon.png",
   chapterType = ChapterType.HTML,

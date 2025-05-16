@@ -10,7 +10,7 @@
     {
       "id": -706869138,
       "name": "wasu-code",
-      "desc": "Worked on AnyWeb (+ NovelUpdates), Pokatne, Readability, Reddit",
+      "desc": "Worked on AnyWeb (+NovelUpdates), Pokatne, Readability, Reddit",
       "imageURL": "",
       "website": ""
     },
@@ -143,13 +143,13 @@
     },
     {
       "id": 23119214,
-      "name": "AnyWeb (+ NovelUpdates)",
+      "name": "AnyWeb (+NovelUpdates)",
       "fileName": "AnyWeb",
       "imageURL": "https://novelupdates.com/appicon.png",
       "lang": "all",
       "ver": "1.0.0",
       "libVer": "1.0.0",
-      "md5": "f28cf4c88d36d7e52f42d6fd429649b2b61c994092283c4f260bcceda6f6e589",
+      "md5": "fef9e0587e34329aa70998f55058dfb57fd045db3de4b0b7cf144dff2c042eeb",
       "type": "LuaScript"
     }
   ],
