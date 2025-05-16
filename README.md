@@ -2,6 +2,8 @@
 
 Extensions for [Shosetsu](https://gitlab.com/shosetsuorg/shosetsu) app.
 
+To add repo to app copy [this link](https://raw.githubusercontent.com/wasu-code/shosetsu-extensions/refs/heads/dev/)
+
 ## Bug Reports
 
 1. Ensure there are no issues for the same bug [here][issues].
