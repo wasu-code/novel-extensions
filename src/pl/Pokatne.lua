@@ -161,12 +161,12 @@ return {
 
       -- Create a table of non-nil filters
       local filters = {}
-      if data[FID_CAT] > 0 then
-        if data[FID_CAT] == 1 then
-          filters["cat"] = 4 -- Poczekalnia
-        elseif data[FID_CAT] == 2 then
-          filters["cat"] = "all" -- Wszystko
-        end
+      if data[FID_CAT] ~= nil then
+        filters["cat"] = ({
+            [0] = 1, -- Zbiór Główny
+            [1] = 4, -- Poczekalnia
+            [2] = "all", -- Wszystko
+        })[data[FID_CAT]]
       end
       if data[FID_WARNING] > 0 then filters["warning"] = data[FID_WARNING] == 1 and 1 or 0 end
       if data[FID_SERIES] > 0 then filters["series"] = data[FID_SERIES] == 1 and 1 or 0 end
