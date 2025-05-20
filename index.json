@@ -147,9 +147,9 @@
       "fileName": "AnyWeb",
       "imageURL": "https://novelupdates.com/appicon.png",
       "lang": "all",
-      "ver": "1.0.0",
+      "ver": "1.0.1",
       "libVer": "1.0.0",
-      "md5": "fef9e0587e34329aa70998f55058dfb57fd045db3de4b0b7cf144dff2c042eeb",
+      "md5": "41353e382b01b949fbe2062a2b14a811f43f013c5a42f38acc68954b1470f1f1",
       "type": "LuaScript"
     }
   ],
