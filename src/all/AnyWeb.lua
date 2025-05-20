@@ -1,8 +1,7 @@
--- {"id": 23119214, "ver": "1.0.1", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=1.0.0", "url", "unhtml"]}
+-- {"id": 23119214, "ver": "1.0.0", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=1.0.0", "url"]}
 
 local parseArticle = Require("Readability").parse
 local qs = Require("url").querystring
-local HTMLToString = Require("unhtml").HTMLToString
 
 local novelUpdatesURL = "https://www.novelupdates.com"
 
@@ -31,7 +30,7 @@ local function parseNovelUpdatesChapters(doc)
     )
   )
 
-  local chapters = filter(
+  return filter(
     map(
       doc2:select("a[href]"),
       function(card)
@@ -51,9 +50,6 @@ local function parseNovelUpdatesChapters(doc)
       return chapter ~= nil
     end
   )
-
-  Reverse(chapters)
-  return chapters
 end
 
 --- Parses novel and chapters from NovelUpdates metadata
@@ -65,7 +61,7 @@ local function parseNUNovel(novelUrl, loadChapters)
   local info = NovelInfo {
     title = doc:selectFirst(".seriestitlenu"):text(),
     imageURL = doc:selectFirst(".seriesimg img[src], .serieseditimg img"):attr("src"),
-    description = HTMLToString(doc:selectFirst("#editdescription")),
+    description = doc:selectFirst("#editdescription"):text(),
     alternativeTitles = map(
       (function()
         local titles = {}
