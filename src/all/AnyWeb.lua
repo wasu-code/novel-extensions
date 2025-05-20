@@ -52,7 +52,11 @@ local function parseNovelUpdatesChapters(doc)
     end
   )
 
-  Reverse(chapters)
+  -- Reverse the chapters list
+  local n = #chapters
+  for i = 1, math.floor(n / 2) do
+    chapters[i], chapters[n - i + 1] = chapters[n - i + 1], chapters[i]
+  end
   return chapters
 end
 
