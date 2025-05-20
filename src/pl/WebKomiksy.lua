@@ -80,8 +80,11 @@ local function parseNovel(url, loadChapters)
         }
       end
     ))
-    Reverse(chapters)
-    info:setChapters(chapters)
+    local reversed = {}
+    for i = #chapters, 1, -1 do
+      table.insert(reversed, chapters[i])
+    end
+    info:setChapters(reversed)
   end
 
   return info
