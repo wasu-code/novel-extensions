@@ -1,4 +1,4 @@
--- {"id": 23119214, "ver": "1.0.0", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=1.0.0", "url"]}
+-- {"id": 23119214, "ver": "1.0.1", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=1.0.0", "url"]}
 
 local parseArticle = Require("Readability").parse
 local qs = Require("url").querystring
@@ -30,7 +30,7 @@ local function parseNovelUpdatesChapters(doc)
     )
   )
 
-  return filter(
+  local chapters = filter(
     map(
       doc2:select("a[href]"),
       function(card)
@@ -50,6 +50,9 @@ local function parseNovelUpdatesChapters(doc)
       return chapter ~= nil
     end
   )
+  
+  Reverse(chapters)
+  return chapters
 end
 
 --- Parses novel and chapters from NovelUpdates metadata
