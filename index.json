@@ -10,7 +10,7 @@
     {
       "id": -706869138,
       "name": "wasu-code",
-      "desc": "Worked on AnyWeb (+NovelUpdates), Pokatne, Readability, Reddit",
+      "desc": "Worked on AnyWeb (+NovelUpdates), Pokatne, Readability, Reddit, WebKomiksy",
       "imageURL": "",
       "website": ""
     },
@@ -150,6 +150,17 @@
       "ver": "1.0.0",
       "libVer": "1.0.0",
       "md5": "fef9e0587e34329aa70998f55058dfb57fd045db3de4b0b7cf144dff2c042eeb",
+      "type": "LuaScript"
+    },
+    {
+      "id": 23119215,
+      "name": "WebKomiksy",
+      "fileName": "WebKomiksy",
+      "imageURL": "https://www.webkomiksy.pl/favicon.ico",
+      "lang": "pl",
+      "ver": "0.0.0",
+      "libVer": "1.0.0",
+      "md5": "5733af442ce6107d4962dfc6a7183b2005ded3b72c96938e8dd418a8e02df423",
       "type": "LuaScript"
     }
   ],
