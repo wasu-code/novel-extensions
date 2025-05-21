@@ -1,7 +1,6 @@
--- {"id":23119215,"ver":"1.0.0","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["url>=1.0.0", "unhtml"]}
+-- {"id":23119215,"ver":"1.0.0","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["url>=1.0.0"]}
 
 local qs = Require("url").querystring
-local HTMLToString = Require("unhtml").HTMLToString
 
 local baseURL = "https://www.webkomiksy.pl"
 
@@ -66,7 +65,7 @@ local function parseNovel(url, loadChapters)
     title = doc:selectFirst("h1"):text(),
     imageURL = expandURL(doc:selectFirst('img[fetchpriority="high"]'):attr("src")),
     authors = {doc:selectFirst("img+span"):text()},
-    description = HTMLToString(doc:selectFirst("h2+div")),
+    description = doc:selectFirst("h2+div"):wholeText(),
     genres = map(doc:select(" div.flex.flex-wrap.gap-2 span"), function(v) return v:text() end),
   }
 
