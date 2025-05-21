@@ -54,7 +54,7 @@ local function parseAudiobooks(doc)
       title = a:text(),
       link = shrinkURL(a:attr("href")),
       imageURL = card:selectFirst("img"):attr("src"),
-      authors = {card:selectFirst(".caption > a")}
+      authors = {card:selectFirst(".caption > a"):text()}
     }
   end)
 end
