@@ -4,11 +4,6 @@ on:
   push:
     branches:
       - dev
-  pull_request:
-    branches:
-      - dev
-    types:
-      - closed
 
 jobs:
   generate-index:
