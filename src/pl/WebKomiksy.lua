@@ -66,7 +66,7 @@ local function parseNovel(url, loadChapters)
     imageURL = expandURL(doc:selectFirst('img[fetchpriority="high"]'):attr("src")),
     authors = {doc:selectFirst("img+span"):text()},
     description = doc:selectFirst("h2+div"):wholeText(),
-    genres = map(doc:select(" div.flex.flex-wrap.gap-2 span"), function(v) return v:text() end),
+    genres = map(doc:select("div:nth-child(2) > div.flex.flex-wrap.gap-2 span"), function(v) return v:text() end),
   }
 
   if loadChapters then
