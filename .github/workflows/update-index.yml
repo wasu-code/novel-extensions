@@ -1,0 +1,41 @@
+name: Index updater
+
+on:
+  push:
+    branches:
+      - dev # Only run on pushes to the dev branch
+  pull_request:
+    types:
+      - closed # Only when PR is closed
+
+jobs:
+  run-tester:
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/dev') ||
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.base_ref == 'dev')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true # Needed to push changes
+
+      - name: Set up Git user
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Download extension tester
+        run: |
+          wget -O extension-tester.jar "https://cdn.shosetsu.app/extension-tester/v2.0.0/extension-tester.jar"
+
+      - name: Run extension tester
+        run: |
+          java -jar extension-tester.jar --generate-index
+
+      - name: Commit and push updated index.json
+        run: |
+          git add index.json
+          git commit -m "chore: update index.json [auto]"
+          git push origin dev
+        continue-on-error: true # In case there's nothing to commit
