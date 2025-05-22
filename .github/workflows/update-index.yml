@@ -1,41 +1,46 @@
-name: Index updater
+name: Generate Index on Dev
 
 on:
   push:
     branches:
-      - dev # Only run on pushes to the dev branch
+      - dev
   pull_request:
+    branches:
+      - dev
     types:
-      - closed # Only when PR is closed
+      - closed
 
 jobs:
-  run-tester:
-    if: |
-      (github.event_name == 'push' && github.ref == 'refs/heads/dev') ||
-      (github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.base_ref == 'dev')
+  generate-index:
+    if: github.event.pull_request.merged == true || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          persist-credentials: true # Needed to push changes
+          fetch-depth: 0
+          persist-credentials: true # Required for pushing
 
-      - name: Set up Git user
+      - name: Restore extension tester from cache
+        uses: actions/cache@v4
+        with:
+          path: extension-tester.jar
+          key: ${{ runner.os }}-extension-tester-v2
+
+      - name: Download extension tester if missing
+        run: |
+          if [ ! -f extension-tester.jar ]; then
+            wget -O extension-tester.jar "https://cdn.shosetsu.app/extension-tester/v2.0.0/extension-tester.jar"
+          fi
+
+      - name: Generate index.json
+        run: |
+          java -jar extension-tester.jar --ci --generate-index
+
+      - name: Commit and push index.json
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Download extension tester
-        run: |
-          wget -O extension-tester.jar "https://cdn.shosetsu.app/extension-tester/v2.0.0/extension-tester.jar"
-
-      - name: Run extension tester
-        run: |
-          java -jar extension-tester.jar --generate-index
-
-      - name: Commit and push updated index.json
-        run: |
           git add index.json
-          git commit -m "chore: update index.json [auto]"
-          git push origin dev
-        continue-on-error: true # In case there's nothing to commit
+          git diff --cached --quiet || git commit -m "chore(index): auto-generate index.json"
+          git push

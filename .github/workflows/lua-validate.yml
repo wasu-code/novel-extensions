@@ -1,0 +1,36 @@
+name: Validate Lua Files
+
+on:
+  push:
+    branches-ignore:
+      - dev
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get changed Lua files
+        id: changed
+        run: |
+          CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^src/.*\.lua$' || true)
+          echo "changed=$CHANGED" >> $GITHUB_OUTPUT
+
+      - name: Restore extension tester from cache
+        uses: actions/cache@v4
+        with:
+          path: extension-tester.jar
+          key: ${{ runner.os }}-extension-tester-v2
+
+      - name: Download extension tester if missing
+        run: |
+          if [ ! -f extension-tester.jar ]; then
+            wget -O extension-tester.jar "https://cdn.shosetsu.app/extension-tester/v2.0.0/extension-tester.jar"
+          fi
+
+      - name: Validate Lua metadata
+        if: steps.changed.outputs.changed != ''
+        run: |
+          java -jar extension-tester.jar --ci --validate-metadata ${{ steps.changed.outputs.changed }}
