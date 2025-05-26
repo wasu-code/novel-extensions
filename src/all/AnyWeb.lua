@@ -1,4 +1,4 @@
--- {"id": 23119214, "ver": "1.0.1", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=1.0.0", "url", "unhtml"]}
+-- {"id": 23119214, "ver": "1.0.2", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=1.0.0", "url", "unhtml"]}
 
 local parseArticle = Require("Readability").parse
 local qs = Require("url").querystring
