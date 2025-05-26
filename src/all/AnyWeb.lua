@@ -1,4 +1,4 @@
--- {"id": 23119214, "ver": "1.0.1", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=1.0.0", "url", "unhtml"]}
+-- {"id": 23119214, "ver": "1.0.2", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=1.0.0", "url", "unhtml"]}
 
 local parseArticle = Require("Readability").parse
 local qs = Require("url").querystring
@@ -31,24 +31,12 @@ local function parseNovelUpdatesChapters(doc)
     )
   )
 
-  local chapters = filter(
-    map(
-      doc2:select("a[href]"),
-      function(card)
-        if card:hasAttr("data-id") then
-          local span = card:selectFirst("span")
-          if span then
-            return NovelChapter {
-              title = span:attr("title"),
-              link = "https:" .. card:attr("href"),
-            }
-          end
-        end
-        return nil  -- will be filtered out
-      end
-    ),
-    function(chapter)
-      return chapter ~= nil
+  local chapters = map(doc2:select("a[href][data-id]"),
+    function(card)
+      return NovelChapter {
+        title = card:selectFirst("span"):attr("title"),
+        link = "https:" .. card:attr("href"),
+      }
     end
   )
 
