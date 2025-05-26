@@ -34,3 +34,23 @@ jobs:
         if: steps.changed.outputs.changed != ''
         run: |
           java -jar extension-tester.jar --ci --validate-metadata ${{ steps.changed.outputs.changed }}
+
+      - name: Check version bump in changed Lua files
+        if: steps.changed.outputs.changed != ''
+        run: |
+          set -e
+          for file in ${{ steps.changed.outputs.changed }}; do
+            if [ ! -f "$file" ]; then continue; fi
+            # Get header lines from current and previous commit
+            old_header=$(git show ${{ github.event.before }}:"$file" 2>/dev/null | head -n 1)
+            new_header=$(head -n 1 "$file")
+            # Extract version numbers
+            old_ver=$(echo "$old_header" | grep -o '"ver": *"[^"]*"' | sed 's/.*"ver": *"\([^"]*\)".*/\1/')
+            new_ver=$(echo "$new_header" | grep -o '"ver": *"[^"]*"' | sed 's/.*"ver": *"\([^"]*\)".*/\1/')
+            if [ -n "$old_ver" ] && [ -n "$new_ver" ]; then
+              if [ "$old_ver" = "$new_ver" ]; then
+                echo "::error file=$file::Version number ('ver') not incremented in $file"
+                exit 1
+              fi
+            fi
+          done
