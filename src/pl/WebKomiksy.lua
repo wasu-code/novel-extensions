@@ -10,6 +10,11 @@ local FID_STATUS = 3
 local FID_CATEGORY = 4
 local FID_SORT = 5
 
+local SID_UPCOMING = 1
+local settings = {
+  [SID_UPCOMING] = false,
+}
+
 local STATUSES = {
   { value = nil, label = "Wszystkie" },
   { value = "completed", label = "Ukończone" },
@@ -69,21 +74,28 @@ local function parseNovel(url, loadChapters)
     genres = map(doc:select("div:nth-child(2) > div.flex.flex-wrap.gap-2 span"), function(v) return v:text() end),
   }
 
-  if loadChapters then
+    if loadChapters then
     local chapters = AsList(map(
-      doc:select("a.group.h-auto"),
+      doc:select(settings[SID_UPCOMING]
+        and "h3:contains(Opublikowane)+div>a, h3:contains(Planowane)+div>div"
+        or  "h3:contains(Opublikowane)+div>a"),
       function (card)
+        local title = card:selectFirst("div:has(>h3)"):text()
+        local chapterNum = title:match("#(%d+)")
+        local href = card:attr("href")
         return NovelChapter {
-          title = card:selectFirst("h3"):text(),
-          link = card:attr("href"),
+          title = title,
+          link = href ~= "" and href or ("/ksiazka/wola-sztuki/czytnik/" .. chapterNum),
           release = card:selectFirst("span:has(.iconify)"):text()
         }
       end
     ))
+
     local reversed = {}
     for i = #chapters, 1, -1 do
       table.insert(reversed, chapters[i])
     end
+
     info:setChapters(reversed)
   end
 
@@ -92,7 +104,7 @@ end
 
 local function getPassage(url)
   local doc = GETDocument(expandURL(url))
-  local story = doc:selectFirst("article")
+  local story = doc:selectFirst("article") or error("\n\nTen rozdział nie jest jeszcze dostępny")
   return pageOfElem(story, false)
 end
 
@@ -138,4 +150,11 @@ return {
 	hasSearch = false,
 	isSearchIncrementing = false,
 	search = function() end,
+
+  settings = {
+    SwitchFilter(SID_UPCOMING, "Pokaż nadchodzące rozdziały")
+  },
+  updateSetting = function(id, value)
+    settings[id] = value
+  end,
 }
