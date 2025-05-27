@@ -56,3 +56,18 @@ jobs:
               fi
             fi
           done
+
+      - name: Run extension tester on changed Lua files
+        if: steps.changed.outputs.changed != ''
+        run: |
+          set -e
+          for file in ${{ steps.changed.outputs.changed }}; do
+            # Only test files matching src/<lang>/<ExtensionName>.lua
+            if [[ "$file" =~ ^src/[^/]+/[^/]+\.lua$ ]]; then
+              lang=$(echo "$file" | cut -d'/' -f2)
+              echo "Testing $file"
+              java -jar extension-tester.jar "$file"
+            else
+              echo "Skipping $file (not lua extension)"
+            fi
+          done
