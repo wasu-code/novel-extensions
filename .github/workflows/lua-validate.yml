@@ -15,7 +15,11 @@ jobs:
       - name: Get changed Lua files
         id: changed
         run: |
-          CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^src/.*\.lua$' || true)
+          if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+            CHANGED=$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | grep '^src/.*\.lua$' || true)
+          else
+            CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^src/.*\.lua$' || true)
+          fi
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
 
       - name: Restore extension tester from cache
