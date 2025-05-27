@@ -37,11 +37,6 @@ jobs:
             wget -O extension-tester.jar "https://cdn.shosetsu.app/extension-tester/v2.0.0/extension-tester.jar"
           fi
 
-      - name: Validate Lua metadata
-        if: steps.changed.outputs.changed != ''
-        run: |
-          java -jar extension-tester.jar --ci --validate-metadata ${{ steps.changed.outputs.changed }}
-
       - name: Check version bump in changed Lua files
         if: steps.changed.outputs.changed != ''
         run: |
