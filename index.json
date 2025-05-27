@@ -158,9 +158,9 @@
       "fileName": "WebKomiksy",
       "imageURL": "https://www.webkomiksy.pl/favicon.ico",
       "lang": "pl",
-      "ver": "1.0.0",
+      "ver": "1.0.1",
       "libVer": "1.0.0",
-      "md5": "1aa1e471c275703733d0484b6776013d2ef54931f7cf73902132bc70930fd5e6",
+      "md5": "ca7f884a6d1fac1f8145a62ae654a081ed0ddeb8003178f0a553a6b7c1c2c9c6",
       "type": "LuaScript"
     }
   ],
