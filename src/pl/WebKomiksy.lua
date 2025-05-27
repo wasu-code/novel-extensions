@@ -1,4 +1,4 @@
--- {"id":23119215,"ver":"1.0.0","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["url>=1.0.0"]}
+-- {"id":23119215,"ver":"1.0.1","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["url>=1.0.0"]}
 
 local qs = Require("url").querystring
 
