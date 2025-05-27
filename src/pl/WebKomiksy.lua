@@ -74,7 +74,7 @@ local function parseNovel(url, loadChapters)
     genres = map(doc:select("div:nth-child(2) > div.flex.flex-wrap.gap-2 span"), function(v) return v:text() end),
   }
 
-    if loadChapters then
+  if loadChapters then
     local chapters = AsList(map(
       doc:select(settings[SID_UPCOMING]
         and "h3:contains(Opublikowane)+div>a, h3:contains(Planowane)+div>div"
