@@ -22,6 +22,7 @@ jobs:
           else
             CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^src/.*\.lua$' || true)
           fi
+          echo "Changed Lua files: $CHANGED"
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
 
       - name: Restore extension tester from cache
