@@ -11,11 +11,15 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history so git diff works
 
       - name: Get changed Lua files
         id: changed
         run: |
-          CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^src/.*\.lua$' || true)
+          git fetch origin dev:refs/remotes/origin/dev
+          CHANGED=$(git diff --name-only origin/dev...${{ github.sha }} | grep '^src/.*\.lua$' || true)
+          echo "Changed Lua files: $CHANGED"
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
 
       - name: Restore extension tester from cache
@@ -30,19 +34,14 @@ jobs:
             wget -O extension-tester.jar "https://cdn.shosetsu.app/extension-tester/v2.0.0/extension-tester.jar"
           fi
 
-      - name: Validate Lua metadata
-        if: steps.changed.outputs.changed != ''
-        run: |
-          java -jar extension-tester.jar --ci --validate-metadata ${{ steps.changed.outputs.changed }}
-
       - name: Check version bump in changed Lua files
         if: steps.changed.outputs.changed != ''
         run: |
           set -e
           for file in ${{ steps.changed.outputs.changed }}; do
             if [ ! -f "$file" ]; then continue; fi
-            # Get header lines from current and previous commit
-            old_header=$(git show ${{ github.event.before }}:"$file" 2>/dev/null | head -n 1)
+            # Get header lines from current and dev branch
+            old_header=$(git show origin/dev:"$file" 2>/dev/null | head -n 1)
             new_header=$(head -n 1 "$file")
             # Extract version numbers
             old_ver=$(echo "$old_header" | grep -o '"ver": *"[^"]*"' | sed 's/.*"ver": *"\([^"]*\)".*/\1/')
@@ -52,5 +51,20 @@ jobs:
                 echo "::error file=$file::Version number ('ver') not incremented in $file"
                 exit 1
               fi
+            fi
+          done
+
+      - name: Run extension tester on changed Lua files
+        if: steps.changed.outputs.changed != ''
+        run: |
+          set -e
+          for file in ${{ steps.changed.outputs.changed }}; do
+            # Only test files matching src/<lang>/<ExtensionName>.lua
+            if [[ "$file" =~ ^src/[^/]+/[^/]+\.lua$ ]]; then
+              lang=$(echo "$file" | cut -d'/' -f2)
+              echo "Testing $file"
+              java -jar extension-tester.jar "$file"
+            else
+              echo "Skipping $file (not lua extension)"
             fi
           done
