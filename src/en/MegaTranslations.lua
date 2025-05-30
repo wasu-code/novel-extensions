@@ -69,41 +69,22 @@ local function parseNovel(url, loadChapters)
   }
 
   if loadChapters then
-
-    -- TODO figure out why this works in extension-tester but not shosetsu
-    -- local chapters = {}
-    -- local sections = doc:select("h3:has(+ .wp-block-media-text)")
-    -- for i = 0, sections:size() - 1 do
-    --   local section = sections:get(i)
-    --   local sectionContent = section:nextElementSibling()
-    --   if sectionContent and sectionContent:hasClass("wp-block-media-text") then
-    --     local links = sectionContent:select("p.has-text-align-center a")
-    --     for j = 0, links:size() - 1 do
-    --       local ch = links:get(j)
-    --       table.insert(chapters, NovelChapter {
-    --         title = section:text() .. ": " .. ch:text(),
-    --         link = shrinkURL(ch:attr("href")),
-    --         order = (i + 1) + (j + 1) / 10
-    --       })
-    --     end
-    --   end
-    -- end
-
-    local chapters = filter(
-      map(doc:select("p.has-text-align-center a"),
-        function(ch)
-          local link = ch:attr("href")
-          return NovelChapter {
-            title = ch:text(),
-            link = shrinkURL(link),
-          }
+    local chapters = {}
+    local sections = doc:select(".wp-block-heading + .wp-block-media-text")
+    for i = 0, sections:size() - 1 do
+      local section = sections:get(i)
+      local header = section:previousElementSibling()
+      if header and header:hasClass("wp-block-heading") then
+        local links = section:select("p.has-text-align-center a")
+        for j = 0, links:size() - 1 do
+          local ch = links:get(j)
+          table.insert(chapters, NovelChapter {
+            title = header:text():gsub("Volume%s*(%d+)", "Vol.%1") .. " " .. ch:text():gsub("Chapter%s*(%d+)", "Ch.%1"),
+            link = shrinkURL(ch:attr("href")),
+          })
         end
-      ),
-      function(chapter)
-        return chapter ~= nil
       end
-    )
-
+    end
     info:setChapters(chapters)
   end
 
