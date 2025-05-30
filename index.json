@@ -77,9 +77,9 @@
     },
     {
       "name": "Readability",
-      "ver": "1.0.0",
+      "ver": "1.1.0",
       "url": null,
-      "hash": "430751e92df437e0866f8623b5e0cd588725338e9882be2905b1ae9ec57b0738"
+      "hash": "56b29573f9223a23cb278e9247645384c43b6bd104a68b0e9ee07ff62ed66c53"
     },
     {
       "name": "WWVolare",
@@ -147,9 +147,9 @@
       "fileName": "AnyWeb",
       "imageURL": "https://novelupdates.com/appicon.png",
       "lang": "all",
-      "ver": "1.0.3",
+      "ver": "1.0.4",
       "libVer": "1.0.0",
-      "md5": "33633be0eb2c66a4e96520db1bc99a02b2772e15e6d3f4fb9d9100afcedcef66",
+      "md5": "39bb0d02aac281d7481883bf014e47f8f512d0e2c6023abec88a3dcbef92a486",
       "type": "LuaScript"
     },
     {
