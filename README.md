@@ -1,8 +1,14 @@
-# Extensions - Wąsate Wtyczki
+<div align="center">
+
+<img src="./.github/assets/logo.png" alt="repo logo" width="80"/>
+
+# Wąsate Wtyczki
 
 Extensions for [Shosetsu](https://gitlab.com/shosetsuorg/shosetsu) app.
 
-To add repo to app copy [this link](https://raw.githubusercontent.com/wasu-code/shosetsu-extensions/refs/heads/dev/)
+To add repo to app copy [this link](https://raw.githubusercontent.com/wasu-code/shosetsu-extensions/refs/heads/dev/).
+
+</div>
 
 ## Bug Reports
 
