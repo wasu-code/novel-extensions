@@ -1,4 +1,4 @@
--- {"id": 23119211, "ver": "1.0.0", "libVer": "1.0.0", "author": "wasu-code", "dep": ["url>=1.0.0"]}
+-- {"id": 23119211, "ver": "1.0.1", "libVer": "1.0.0", "author": "wasu-code", "dep": ["url>=1.0.0"]}
 
 local qs = Require("url").querystring
 
@@ -231,7 +231,7 @@ return {
   getPassage = function(url)
     local doc = GETDocument(expandURL(url))
     local story = doc:selectFirst("div.story article .content")
-    return pageOfElem(story, false)
+    return pageOfElem(story, true)
   end,
 
   isSearchIncrementing = false,
