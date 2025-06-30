@@ -125,9 +125,9 @@
       "fileName": "Pokatne",
       "imageURL": "https://www.pokatne.pl/images/apple-touch-icon.png",
       "lang": "pl",
-      "ver": "1.0.0",
+      "ver": "1.0.1",
       "libVer": "1.0.0",
-      "md5": "8492daa30d556ced43fa86bc0188bd9ac1c4cacf2d2c72f39b31133bc6e057dd",
+      "md5": "47a64e81744dde631bd12b27c809ef0e672ffb289d70ab7ae1057f582e096550",
       "type": "LuaScript"
     },
     {
@@ -158,9 +158,9 @@
       "fileName": "WebKomiksy",
       "imageURL": "https://www.webkomiksy.pl/favicon.ico",
       "lang": "pl",
-      "ver": "1.0.1",
+      "ver": "1.0.2",
       "libVer": "1.0.0",
-      "md5": "ca7f884a6d1fac1f8145a62ae654a081ed0ddeb8003178f0a553a6b7c1c2c9c6",
+      "md5": "dc6ceeefac6900d8248ae747a04a9a0668f3861de7c3e89faeca747805165004",
       "type": "LuaScript"
     }
   ],
