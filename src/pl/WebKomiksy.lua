@@ -1,6 +1,7 @@
--- {"id":23119215,"ver":"1.0.1","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["url>=1.0.0"]}
+-- {"id":23119215,"ver":"1.0.2","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["url>=1.0.0", "dkjson"]}
 
 local qs = Require("url").querystring
+local dkjson = Require("dkjson")
 
 local baseURL = "https://www.webkomiksy.pl"
 
@@ -55,13 +56,57 @@ local function expandURL(url)
 end
 
 local function parseListing(doc)
-  return map(doc:select(".flex-1 a:has(img)"), function (card)
-    return Novel {
-      title = card:selectFirst("h3"):text(),
-      imageURL = expandURL(card:selectFirst("img"):attr("src")),
-      link = card:attr("href")
-    }
-  end)
+    return map(doc:select(".flex-1 a:has(img)"), function(card)
+        return Novel {
+            title = card:selectFirst("h3"):text(),
+            imageURL = expandURL(card:selectFirst("img"):attr("src")),
+            link = card:attr("href")
+        }
+    end)
+end
+
+local function parseChapterList(document)
+    local script = document:selectFirst("script#__NUXT_DATA__")
+    local parsed = dkjson.decode(script:data())
+
+    local function a(index)
+      return parsed[index+1]
+    end
+
+    local chapters = {}
+
+    local episodes = a(a(4).episodes)
+
+    local function processEpisode(ep)
+        local chapter = a(ep)
+        local published = a(chapter.planned)
+
+        local date = string.sub(a(chapter.date), 1, 10) -- show only YYYY-MM-DD
+
+        local novelChapter = NovelChapter {
+            title = a(chapter.name),
+            order = a(chapter.index),
+            link = a(a(1).path) .. "/czytnik/" .. a(chapter.index),
+            release = date .. (published and " (nadchodzący)" or "")
+        }
+
+        table.insert(chapters, novelChapter)
+    end
+
+    local publishedEpisodes = a(episodes.current)
+    for _, ep in ipairs(publishedEpisodes) do
+        processEpisode(ep)
+    end
+
+    -- optionally load upcoming episodes
+    if settings[SID_UPCOMING] then
+      local upcomingEpisodes = a(episodes.planned)
+      for _, ep in ipairs(upcomingEpisodes) do
+          processEpisode(ep)
+      end
+    end
+
+  return chapters
 end
 
 local function parseNovel(url, loadChapters)
@@ -75,28 +120,7 @@ local function parseNovel(url, loadChapters)
   }
 
   if loadChapters then
-    local chapters = AsList(map(
-      doc:select(settings[SID_UPCOMING]
-        and "h3:contains(Opublikowane)+div>a, h3:contains(Planowane)+div>div"
-        or  "h3:contains(Opublikowane)+div>a"),
-      function (card)
-        local title = card:selectFirst("div:has(>h3)"):text()
-        local chapterNum = title:match("#(%d+)")
-        local href = card:attr("href")
-        return NovelChapter {
-          title = title,
-          link = href ~= "" and href or ("/ksiazka/wola-sztuki/czytnik/" .. chapterNum),
-          release = card:selectFirst("span:has(.iconify)"):text()
-        }
-      end
-    ))
-
-    local reversed = {}
-    for i = #chapters, 1, -1 do
-      table.insert(reversed, chapters[i])
-    end
-
-    info:setChapters(reversed)
+    info:setChapters(parseChapterList(doc))
   end
 
   return info
