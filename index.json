@@ -136,9 +136,9 @@
       "fileName": "Reddit",
       "imageURL": "https://www.redditstatic.com/shreddit/assets/snoo_wave.png",
       "lang": "all",
-      "ver": "1.0.1",
+      "ver": "1.0.2",
       "libVer": "1.0.0",
-      "md5": "aec63c695dfe825965576c455534ac0c3dba9b467e318561145794462616a365",
+      "md5": "7c9a19a305ea65f893223d52e5852e0ea5149e1d7e326e1959a83325af34b72b",
       "type": "LuaScript"
     },
     {
