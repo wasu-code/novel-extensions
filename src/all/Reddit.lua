@@ -1,4 +1,4 @@
--- {"id": 23119212, "ver": "1.0.1", "libVer": "1.0.0", "author": "wasu-code", "dep": ["url>=1.0.0"]}
+-- {"id": 23119212, "ver": "1.0.2", "libVer": "1.0.0", "author": "wasu-code", "dep": ["url>=1.0.0"]}
 
 local qs = Require("url").querystring
 
@@ -82,11 +82,19 @@ local function parseNovel(novelUrl, loadChapters)
   local descElem = doc:selectFirst('div[slot="text-body"] p')
   local genreElem = doc:selectFirst('[slot="post-flair"] .flair-content')
 
+  local function getSrc(selector)
+    local el = doc:selectFirst(selector)
+    return el and el:attr("src")
+  end
+
   local info = NovelInfo {
     title = doc:selectFirst('h1[slot="title"]'):text(),
     description = descElem and descElem:text() or "THIS POST DOES NOT CONTAIN TEXT",
     authors = {doc:selectFirst(".author-name"):text()},
-    imageURL = DEFAULT_COVER2,
+    imageURL = getSrc("img#post-image") -- post image
+            or getSrc("img.media-lightbox-img") -- first image in gallery
+            or getSrc('div[slot="text-body"] img') -- first image inside text post
+            or DEFAULT_COVER2,
     genres = genreElem and {genreElem:text()} or {}
   }
 
