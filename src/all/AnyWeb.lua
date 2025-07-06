@@ -1,4 +1,4 @@
--- {"id": 23119214, "ver": "1.0.4", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=1.1.0", "url", "unhtml"]}
+-- {"id": 23119214, "ver": "1.0.5", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=1.1.0", "url", "unhtml"]}
 
 local parseArticle = Require("Readability").parse
 local qs = Require("url").querystring
@@ -11,10 +11,23 @@ local FID_SORT = 2
 local FID_ORDER = 3
 local FID_STATUS = 4
 
+-- Settings IDs
+local SID_INDEX_DEPTH = 1
+local SID_INDEX_EXCLUDE_SELECTOR = 2
+local settings = {
+  [SID_INDEX_DEPTH] = 3,
+  [SID_INDEX_EXCLUDE_SELECTOR] = "footer, header, nav, .nav, .footer, .header"
+}
+
 local text = function(v)
     return v:text()
 end
 
+--- Parses chapters from NovelUpdates by sending an AJAX request using extracted hidden form fields.
+--- This function requires the user to be logged in and will throw an error if not authenticated.
+---
+--- @param doc Document The HTML document of the NovelUpdates novel page.
+--- @return NovelChapter[] chapters A list of NovelChapter objects, in ascending order.
 local function parseNovelUpdatesChapters(doc)
   if not doc:selectFirst("#logged_avatar") then
     error("Login in WebView to show chapters")
@@ -81,10 +94,67 @@ local function parseNUNovel(novelUrl, loadChapters)
   return info
 end
 
---- Parses any website as single-chapter novel
+--- Parses a website's chapter index by analyzing HTML structure and selecting the most likely container of chapter links.
+--- This function is intended for "index:" mode where chapters are listed on a single page (not paginated).
+---
+--- @param doc Document The parsed HTML document object representing the novel index page.
+--- @return NovelChapter[] chapters A list of NovelChapter objects.
+local function parseWebsiteIndexChapters(doc)
+  local excludeSelector = settings[SID_INDEX_EXCLUDE_SELECTOR]
+  local maxDepth = tonumber(settings[SID_INDEX_DEPTH])
+
+  -- Remove excluded elements
+  map(doc:select(excludeSelector), function (el)
+    el:remove()
+  end)
+
+  local selectors, weights = {}, {}
+  for d = 1, maxDepth do
+    local path = string.rep("> * ", d)
+    local selector = (path .. "> a"):gsub("> %* > a", "> a") -- fix for depth=1
+    table.insert(selectors, selector)
+    table.insert(weights, math.max(1, maxDepth - (d - 1))) -- e.g. depth 1 = 3, depth 2 = 2, etc.
+  end
+
+  local candidates = {}
+  map(doc:select("*"), function(el)
+    for _, sel in ipairs(selectors) do
+      if el:select(sel):size() > 0 then
+        table.insert(candidates, el)
+        break
+      end
+    end
+  end)
+
+  local bestScore, bestContainer = 0, nil
+  for _, container in ipairs(candidates) do
+    local score = 0
+    for i, sel in ipairs(selectors) do
+      score = score + container:select(sel):size() * weights[i]
+    end
+    if score > bestScore then
+      bestScore = score
+      bestContainer = container
+    end
+  end
+
+  local chapters = {}
+  if bestContainer then
+    map(bestContainer:select("a"), function(a)
+      table.insert(chapters, NovelChapter {
+        title = a:text():match("^%s*(.-)%s*$") ~= "" and a:text() or "Untitled",
+        link = a:attr("href"),
+      })
+    end)
+  end
+
+  return chapters
+end
+
+--- Parses any website as single- or multi-chapter (when prefixed with index:) novel
 --- @param novelUrl string full novel url.
 --- @return NovelInfo
-local function parseWebsiteNovel(novelUrl, loadChapters)
+local function parseWebsiteNovel(novelUrl, loadChapters, isIndex)
   local doc = GETDocument(novelUrl)
 
   -- Attempt to extract metadata using OpenGraph tags
@@ -104,12 +174,16 @@ local function parseWebsiteNovel(novelUrl, loadChapters)
   }
 
   if loadChapters then
-    info:setChapters({
-      NovelChapter {
-        title = title,
-        link = novelUrl,
-      }
-    })
+    if isIndex then
+      info:setChapters(parseWebsiteIndexChapters(doc))
+    else
+      info:setChapters({
+        NovelChapter {
+          title = title,
+          link = novelUrl,
+        }
+      })
+    end
   end
 
   return info
@@ -119,7 +193,12 @@ local function parseNovel(novelUrl, loadChapters)
   if novelUrl:find(novelUpdatesURL, 1, true) then
     return parseNUNovel(novelUrl, loadChapters)
   else
-    return parseWebsiteNovel(novelUrl, loadChapters)
+    local isIndex = false
+    if novelUrl:sub(1, 6) == "index:" then
+      isIndex = true
+      novelUrl = novelUrl:sub(7)  -- remove the "index:" prefix
+    end
+    return parseWebsiteNovel(novelUrl, loadChapters, isIndex)
   end
 end
 
@@ -153,8 +232,9 @@ end
 local function search(data)
   local query = data[QUERY]
 
-  if query:match("^https?://") then
+  if query:match("^https?://") or query:match("^index:https?://") then
     if data[PAGE] > 1 then return {} end
+
     return {
       Novel {
         title = "Click to load",
@@ -224,4 +304,12 @@ return {
       "Hiatus" -- 4
     }),
 	},
+
+  settings = {
+    TextFilter(SID_INDEX_EXCLUDE_SELECTOR, "Index Exclude Selector (default: footer, header, nav, .nav, .footer, .header)"),
+    TextFilter(SID_INDEX_DEPTH, "Index Depth (default: 3)"),
+  },
+  updateSetting = function(id, value)
+    settings[id] = value
+  end,
 }
