@@ -1,4 +1,4 @@
--- {"id": 23119212, "ver": "1.0.2", "libVer": "1.0.0", "author": "wasu-code", "dep": ["url>=1.0.0"]}
+-- {"id": 23119212, "ver": "1.0.3", "libVer": "1.0.0", "author": "wasu-code", "dep": ["url>=1.0.0"]}
 
 local qs = Require("url").querystring
 
@@ -15,6 +15,7 @@ local DEFAULT_COVER = "https://redditinc.com/hubfs/Reddit%20Inc/Blog/Imported_Bl
 local DEFAULT_COVER2 = "https://redditinc.com/hubfs/Reddit%20Inc/Blog/Imported_Blog_Media/BlogHeader_PortalSnoo_003.jpg"
 
 local NEXT_PAGE_URL -- will hold next page url (shrunken) with token param
+local LAST_SUBREDDIT -- will hold last used listing (to be used in search)
 
 -- Filters
 local FID_SORT = 2
@@ -48,25 +49,40 @@ local function parseListing(doc)
   end)
 end
 
-local function listing(data, query)
-  if not query or query == "" then
+local function parseSearch(doc)
+  return map(doc:select('a[data-testid="post-title-text"]'), function(card)
+    return Novel {
+      title = card:text(),
+      link = shrinkURL(card:attr("href")),
+      imageURL = DEFAULT_COVER
+    }
+  end)
+end
+
+local function listing(data, subreddit)
+  if not subreddit or subreddit == "" then
     error("Subreddit not provided (set subreddit name in extension's settings)")
   end
+
+  LAST_SUBREDDIT = subreddit
 
   local page = data[PAGE]
   local sort = SORT_VALUES[data[FID_SORT] + 1]
   local flair = data[FID_FLAIR]
 
   local params = {
-    name = query
+    name = subreddit
   }
   if flair ~= "" then
     params.f = '"' .. flair .. '"'
   end
 
-  local url = qs(params, "/svc/shreddit/community-more-posts/".. sort .. "/")
+  local url
+
   if page > 1 then
     url = NEXT_PAGE_URL
+  else
+    url = qs(params, "/svc/shreddit/community-more-posts/".. sort .. "/")
   end
 
   local doc = GETDocument(expandURL(url))
@@ -139,7 +155,31 @@ local function search(data)
     }
     }
   else
-    error("Invalid query format. Expected: 'r/subreddit' or a valid Reddit URL.")
+    -- search in last used subreddit
+
+    -- will appear in global search if extension/any subreddit wasn't yet opened in app
+    if not LAST_SUBREDDIT then error("Invalid query format. Expected: 'r/subreddit' or a valid Reddit URL.") end
+
+    local page = data[PAGE]
+    local sort = SORT_VALUES[data[FID_SORT] + 1]
+    local flair = data[FID_FLAIR]
+
+    local url
+
+    if page > 1 then
+      url = NEXT_PAGE_URL
+    else
+      url = "/svc/shreddit/search?q=subreddit:" .. LAST_SUBREDDIT .. "+" .. query
+      url = url .. (flair ~= "" and '+flair:%22"'..flair..'"' or "")
+      url = url .. (sort ~= "" and "&sort="..sort or "")
+      url = url .. "&type=posts"
+    end
+
+    local doc = GETDocument(expandURL(url))
+    local nextPageElement = doc:selectFirst('faceplate-partial')
+    NEXT_PAGE_URL = nextPageElement:attr("src")
+
+    return parseSearch(doc)
   end
 end
 
