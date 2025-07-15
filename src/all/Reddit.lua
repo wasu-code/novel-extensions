@@ -40,21 +40,25 @@ local function expandURL(url)
 end
 
 local function parseListing(doc)
-  return map(doc:select('a[slot="full-post-link"]'), function(card)
+  return map(doc:select("article:has(a[slot=full-post-link])"), function(card)
+    local a = card:selectFirst("a[slot=full-post-link]")
+    local img = card:selectFirst("[slot=post-media-container] img")
     return Novel {
-      title = card:text(),
-      link = shrinkURL(card:attr("href")),
-      imageURL = DEFAULT_COVER
+      title = a:text(),
+      link = shrinkURL(a:attr("href")),
+      imageURL = img and img:attr("src") or DEFAULT_COVER
     }
   end)
 end
 
 local function parseSearch(doc)
-  return map(doc:select('a[data-testid="post-title-text"]'), function(card)
+  return map(doc:select("[data-testid=search-post-unit]"), function(card)
+    local a = card:selectFirst("a[data-testid=post-title-text]")
+    local img = card:selectFirst("faceplate-img")
     return Novel {
       title = card:text(),
       link = shrinkURL(card:attr("href")),
-      imageURL = DEFAULT_COVER
+      imageURL = img and img:attr("src") or DEFAULT_COVER
     }
   end)
 end
