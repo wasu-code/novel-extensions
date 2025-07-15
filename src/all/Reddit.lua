@@ -56,8 +56,8 @@ local function parseSearch(doc)
     local a = card:selectFirst("a[data-testid=post-title-text]")
     local img = card:selectFirst("faceplate-img")
     return Novel {
-      title = card:text(),
-      link = shrinkURL(card:attr("href")),
+      title = a:text(),
+      link = shrinkURL(a:attr("href")),
       imageURL = img and img:attr("src") or DEFAULT_COVER
     }
   end)
@@ -181,7 +181,7 @@ local function search(data)
 
     local doc = GETDocument(expandURL(url))
     local nextPageElement = doc:selectFirst('faceplate-partial')
-    NEXT_PAGE_URL = nextPageElement:attr("src")
+    NEXT_PAGE_URL = nextPageElement and nextPageElement:attr("src") or nil
 
     return parseSearch(doc)
   end
