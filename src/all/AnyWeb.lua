@@ -1,4 +1,4 @@
--- {"id": 23119214, "ver": "1.0.5", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=1.1.0", "url", "unhtml"]}
+-- {"id": 23119214, "ver": "1.0.6", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=1.1.0", "url", "unhtml"]}
 
 local parseArticle = Require("Readability").parse
 local qs = Require("url").querystring
@@ -21,6 +21,29 @@ local settings = {
 
 local text = function(v)
     return v:text()
+end
+
+--- Resolves a possibly relative URL to an absolute URL based on the current URL.
+--- Handles absolute URLs, protocol-relative URLs, root-relative URLs, and relative paths.
+--- @param url string The URL to resolve (can be absolute or relative).
+--- @param currentUrl string The base URL to resolve against.
+--- @return string The resolved absolute URL.
+local function resolveUrl(url, currentUrl)
+  if url:match("^https?://") then
+    return url
+  elseif url:sub(1, 2) == "//" then
+    -- Protocol-relative URL
+    local scheme = currentUrl:match("^(https?)://")
+    return scheme and (scheme .. ":" .. url) or ("https:" .. url)
+  elseif url:sub(1, 1) == "/" then
+    -- Root-relative URL
+    local base = currentUrl:match("^(https?://[^/]+)")
+    return base and (base .. url) or url
+  else
+    -- Relative to current path
+    local base = currentUrl:match("^(https?://.*/)")
+    return base and (base .. url) or url
+  end
 end
 
 --- Parses chapters from NovelUpdates by sending an AJAX request using extracted hidden form fields.
@@ -99,7 +122,7 @@ end
 ---
 --- @param doc Document The parsed HTML document object representing the novel index page.
 --- @return NovelChapter[] chapters A list of NovelChapter objects.
-local function parseWebsiteIndexChapters(doc)
+local function parseWebsiteIndexChapters(doc, indexUrl)
   local excludeSelector = settings[SID_INDEX_EXCLUDE_SELECTOR]
   local maxDepth = tonumber(settings[SID_INDEX_DEPTH])
 
@@ -143,7 +166,7 @@ local function parseWebsiteIndexChapters(doc)
     map(bestContainer:select("a"), function(a)
       table.insert(chapters, NovelChapter {
         title = a:text():match("^%s*(.-)%s*$") ~= "" and a:text() or "Untitled",
-        link = a:attr("href"),
+        link = resolveUrl(a:attr("href"), indexUrl),
       })
     end)
   end
@@ -162,7 +185,7 @@ local function parseWebsiteNovel(novelUrl, loadChapters, isIndex)
                 or doc:selectFirst("title"):text()
   local description = doc:selectFirst("meta[property='og:description']") and doc:selectFirst("meta[property='og:description']"):attr("content") or nil
   local imageURL = doc:selectFirst("meta[property='og:image']") and doc:selectFirst("meta[property='og:image']"):attr("content") 
-                   or (doc:selectFirst("img[src]") and doc:selectFirst("img[src]"):attr("src"))
+                   or (doc:selectFirst("img[src]") and resolveUrl((doc:selectFirst("img[src]"):attr("src")), novelUrl))
                    or nil
   local author = doc:selectFirst("meta[name='author']") and doc:selectFirst("meta[name='author']"):attr("content") or nil
 
@@ -175,7 +198,7 @@ local function parseWebsiteNovel(novelUrl, loadChapters, isIndex)
 
   if loadChapters then
     if isIndex then
-      info:setChapters(parseWebsiteIndexChapters(doc))
+      info:setChapters(parseWebsiteIndexChapters(doc, novelUrl))
     else
       info:setChapters({
         NovelChapter {
@@ -276,7 +299,8 @@ return {
 	expandURL = function(url) return url end,
 
   listings = {
-    Listing("Series", true, parseListing),
+    Listing("NovelUpdates", true, parseListing),
+    Listing("Dummy", false, function() error("\n\nAdd any website by pasting URL \n(or URL prefixed with index: for website with list of chapters)") end)
   },
 	parseNovel = parseNovel,
 	getPassage = getPassage,
