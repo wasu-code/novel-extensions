@@ -25,5 +25,5 @@ All extensions I create in this repo are prefixed with `2311921`.
 [Extension template][lua-template]
 
 [lua-template]: https://gitlab.com/shosetsuorg/kotlin-lib/-/raw/main/templates/extension-template.lua
-[bug-report]: /issues
-[issues]: /issues
+[bug-report]: https://github.com/wasu-code/shosetsu-extensions/blob/dev/issues/new
+[issues]: https://github.com/wasu-code/shosetsu-extensions/blob/dev/issues
