@@ -2,7 +2,7 @@
 
 -- Source URL of the external Lua file you're working on to load dynamically  
 -- ! **Change accordingly**
-local URL = "http://192.168.1.23:5500/src/all/Reddit.lua"
+local URL = "http://192.168.1.23:5500/src/dev/extension-template.lua"
 
 -- NOTE: This development extension uses the same ID as the target script.
 --       This means downloaded chapters will be saved in the same directory 
