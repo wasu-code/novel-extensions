@@ -10,7 +10,14 @@
     {
       "id": -706869138,
       "name": "wasu-code",
-      "desc": "Worked on AnyWeb (+NovelUpdates), Pokatne, Readability, Reddit, WebKomiksy",
+      "desc": "Worked on !dev: Example, AnyWeb (+NovelUpdates), Pokatne, Readability, Reddit, WebKomiksy",
+      "imageURL": "",
+      "website": ""
+    },
+    {
+      "id": 0,
+      "name": "",
+      "desc": "Worked on Example",
       "imageURL": "",
       "website": ""
     },
@@ -119,6 +126,28 @@
     }
   ],
   "scripts": [
+    {
+      "id": -1,
+      "name": "Example",
+      "fileName": "extension-template",
+      "imageURL": "https://example.web/asset/logo.png",
+      "lang": "dev",
+      "ver": "1.0.0",
+      "libVer": "1.0.0",
+      "md5": "0e6a66f2628497d3e29653b1b9e6f8f51275cbb67a623cadb10fdafb12233ac7",
+      "type": "LuaScript"
+    },
+    {
+      "id": 23119210,
+      "name": "!dev: Example",
+      "fileName": "_dev",
+      "imageURL": "https://example.web/asset/logo.png",
+      "lang": "dev",
+      "ver": "0.0.0",
+      "libVer": "1.0.0",
+      "md5": "65905adc1d6116fdb792137ac2cbad30a817775a74d23263685b9261969ed79c",
+      "type": "LuaScript"
+    },
     {
       "id": 23119211,
       "name": "Pokatne",
