@@ -288,26 +288,26 @@ local function parseListing(data)
 end
 
 return {
-	id = 23119214,
-	name = "AnyWeb (+NovelUpdates)",
-	baseURL = novelUpdatesURL,
-	imageURL = "https://novelupdates.com/appicon.png",
+  id = 23119214,
+  name = "AnyWeb (+NovelUpdates)",
+  baseURL = novelUpdatesURL,
+  imageURL = "https://novelupdates.com/appicon.png",
   chapterType = ChapterType.HTML,
-	hasCloudFlare = true,
+  hasCloudFlare = true,
 
-	shrinkURL = function(url) return url end,
-	expandURL = function(url) return url end,
+  shrinkURL = function(url) return url end,
+  expandURL = function(url) return url end,
 
   listings = {
     Listing("NovelUpdates", true, parseListing),
     Listing("Dummy", false, function() error("\n\nAdd any website by pasting URL \n(or URL prefixed with index: for website with list of chapters)") end)
   },
-	parseNovel = parseNovel,
-	getPassage = getPassage,
+  parseNovel = parseNovel,
+  getPassage = getPassage,
 
-	hasSearch = true,
-	isSearchIncrementing = true,
-	search = search,
+  hasSearch = true,
+  isSearchIncrementing = true,
+  search = search,
 
   searchFilters = {
     DropdownFilter(FID_SORT, "Sort by", {
@@ -320,14 +320,14 @@ return {
       "Title", -- 7
       "Last Updated" -- 8
     }),
-	  SwitchFilter(FID_ORDER, "Descending"), -- 1: "Ascending", 2: "Descending"
+    SwitchFilter(FID_ORDER, "Descending"), -- 1: "Ascending", 2: "Descending"
     DropdownFilter(FID_STATUS, "Status", {
       "All", -- 1
       "Completed", -- 2
       "Ongoing", -- 3
       "Hiatus" -- 4
     }),
-	},
+  },
 
   settings = {
     TextFilter(SID_INDEX_EXCLUDE_SELECTOR, "Index Exclude Selector (default: footer, header, nav, .nav, .footer, .header)"),
