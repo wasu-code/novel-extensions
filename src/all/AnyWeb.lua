@@ -1,10 +1,12 @@
--- {"id": 23119214, "ver": "1.0.6", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=1.1.0", "url", "unhtml"]}
+-- {"id": 23119214, "ver": "1.0.7", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=1.1.0", "url", "unhtml"]}
 
 local parseArticle = Require("Readability").parse
 local qs = Require("url").querystring
 local HTMLToString = Require("unhtml").HTMLToString
 
 local novelUpdatesURL = "https://www.novelupdates.com"
+
+local INDEX_PREFIX = "index:"
 
 -- Filters IDs
 local FID_SORT = 2
@@ -118,7 +120,7 @@ local function parseNUNovel(novelUrl, loadChapters)
 end
 
 --- Parses a website's chapter index by analyzing HTML structure and selecting the most likely container of chapter links.
---- This function is intended for "index:" mode where chapters are listed on a single page (not paginated).
+--- This function is intended for INDEX mode where chapters are listed on a single page (not paginated).
 ---
 --- @param doc Document The parsed HTML document object representing the novel index page.
 --- @return NovelChapter[] chapters A list of NovelChapter objects.
@@ -174,7 +176,7 @@ local function parseWebsiteIndexChapters(doc, indexUrl)
   return chapters
 end
 
---- Parses any website as single- or multi-chapter (when prefixed with index:) novel
+--- Parses any website as single- or multi-chapter (when prefixed with index prefix) novel
 --- @param novelUrl string full novel url.
 --- @return NovelInfo
 local function parseWebsiteNovel(novelUrl, loadChapters, isIndex)
@@ -217,9 +219,9 @@ local function parseNovel(novelUrl, loadChapters)
     return parseNUNovel(novelUrl, loadChapters)
   else
     local isIndex = false
-    if novelUrl:sub(1, 6) == "index:" then
+    if novelUrl:sub(1, INDEX_PREFIX:len()) == INDEX_PREFIX then
       isIndex = true
-      novelUrl = novelUrl:sub(7)  -- remove the "index:" prefix
+      novelUrl = novelUrl:sub(INDEX_PREFIX:len() + 1)  -- remove the index prefix
     end
     return parseWebsiteNovel(novelUrl, loadChapters, isIndex)
   end
@@ -255,7 +257,7 @@ end
 local function search(data)
   local query = data[QUERY]
 
-  if query:match("^https?://") or query:match("^index:https?://") then
+  if query:match("^https?://") or query:match(string.format("^%shttps?://", INDEX_PREFIX)) then
     if data[PAGE] > 1 then return {} end
 
     return {
@@ -288,26 +290,33 @@ local function parseListing(data)
 end
 
 return {
-	id = 23119214,
-	name = "AnyWeb (+NovelUpdates)",
-	baseURL = novelUpdatesURL,
-	imageURL = "https://novelupdates.com/appicon.png",
+  id = 23119214,
+  name = "AnyWeb (+NovelUpdates)",
+  baseURL = novelUpdatesURL,
+  imageURL = "https://novelupdates.com/appicon.png",
   chapterType = ChapterType.HTML,
-	hasCloudFlare = true,
+  hasCloudFlare = true,
 
-	shrinkURL = function(url) return url end,
-	expandURL = function(url) return url end,
+  shrinkURL = function(url) return url end,
+  expandURL = function(url)
+    if url:sub(1, INDEX_PREFIX:len()) == INDEX_PREFIX then
+      -- remove the index prefix so novel can be opened in webview
+      return url:sub(INDEX_PREFIX:len() + 1)
+    else
+      return url
+    end
+  end,
 
   listings = {
     Listing("NovelUpdates", true, parseListing),
-    Listing("Dummy", false, function() error("\n\nAdd any website by pasting URL \n(or URL prefixed with index: for website with list of chapters)") end)
+    Listing("Dummy", false, function() error(string.format("\n\nAdd any website by pasting URL \n(or URL prefixed with %s for website with list of chapters)", INDEX_PREFIX)) end)
   },
-	parseNovel = parseNovel,
-	getPassage = getPassage,
+  parseNovel = parseNovel,
+  getPassage = getPassage,
 
-	hasSearch = true,
-	isSearchIncrementing = true,
-	search = search,
+  hasSearch = true,
+  isSearchIncrementing = true,
+  search = search,
 
   searchFilters = {
     DropdownFilter(FID_SORT, "Sort by", {
@@ -320,14 +329,14 @@ return {
       "Title", -- 7
       "Last Updated" -- 8
     }),
-	  SwitchFilter(FID_ORDER, "Descending"), -- 1: "Ascending", 2: "Descending"
+    SwitchFilter(FID_ORDER, "Descending"), -- 1: "Ascending", 2: "Descending"
     DropdownFilter(FID_STATUS, "Status", {
       "All", -- 1
       "Completed", -- 2
       "Ongoing", -- 3
       "Hiatus" -- 4
     }),
-	},
+  },
 
   settings = {
     TextFilter(SID_INDEX_EXCLUDE_SELECTOR, "Index Exclude Selector (default: footer, header, nav, .nav, .footer, .header)"),
