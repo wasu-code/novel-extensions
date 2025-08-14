@@ -1,4 +1,4 @@
--- {"id": 23119214, "ver": "1.0.6", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=1.1.0", "url", "unhtml"]}
+-- {"id": 23119214, "ver": "1.0.7", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=1.1.0", "url", "unhtml"]}
 
 local parseArticle = Require("Readability").parse
 local qs = Require("url").querystring
@@ -221,7 +221,7 @@ local function parseNovel(novelUrl, loadChapters)
     local isIndex = false
     if novelUrl:sub(1, INDEX_PREFIX:len()) == INDEX_PREFIX then
       isIndex = true
-      novelUrl = novelUrl:sub(INDEX_PREFIX:len() + 1)  -- remove the INDEX_PREFIX prefix
+      novelUrl = novelUrl:sub(INDEX_PREFIX:len() + 1)  -- remove the index prefix
     end
     return parseWebsiteNovel(novelUrl, loadChapters, isIndex)
   end
@@ -298,7 +298,14 @@ return {
   hasCloudFlare = true,
 
   shrinkURL = function(url) return url end,
-  expandURL = function(url) return url end,
+  expandURL = function(url)
+    if url:sub(1, INDEX_PREFIX:len()) == INDEX_PREFIX then
+      -- remove the index prefix so novel can be opened in webview
+      return url:sub(INDEX_PREFIX:len() + 1)
+    else
+      return url
+    end
+  end,
 
   listings = {
     Listing("NovelUpdates", true, parseListing),
