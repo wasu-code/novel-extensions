@@ -42,7 +42,8 @@ jobs:
         if: steps.changed.outputs.changed != ''
         run: |
           set -e
-          for file in ${{ steps.changed.outputs.changed }}; do
+          files=(${{ steps.changed.outputs.changed }})
+          for file in "${files[@]}"; do
             if [ ! -f "$file" ]; then continue; fi
             # Get header lines from current and dev branch
             old_header=$(git show origin/dev:"$file" 2>/dev/null | head -n 1)
