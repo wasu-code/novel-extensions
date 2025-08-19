@@ -20,7 +20,11 @@ jobs:
           git fetch origin dev:refs/remotes/origin/dev
           CHANGED=$(git diff --name-only origin/dev...${{ github.sha }} | grep '^src/.*\.lua$' || true)
           echo "Changed Lua files: $CHANGED"
-          echo "changed=$CHANGED" >> $GITHUB_OUTPUT
+          {
+            echo "changed<<EOF"
+            echo "$CHANGED"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
 
       - name: Restore extension tester from cache
         uses: actions/cache@v4
