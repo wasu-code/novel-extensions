@@ -1,4 +1,4 @@
--- {"id": 23119214, "ver": "1.0.7", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=1.1.0", "url", "unhtml"]}
+-- {"id": 23119214, "ver": "1.0.8", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=1.1.0", "url", "unhtml"]}
 
 local parseArticle = Require("Readability").parse
 local qs = Require("url").querystring
@@ -17,6 +17,7 @@ local FID_STATUS = 4
 -- Settings IDs
 local SID_INDEX_DEPTH = 1
 local SID_INDEX_EXCLUDE_SELECTOR = 2
+local SID_USAGE_INFO = 3
 local settings = {
   [SID_INDEX_DEPTH] = 3,
   [SID_INDEX_EXCLUDE_SELECTOR] = "footer, header, nav, .nav, .footer, .header"
@@ -124,8 +125,10 @@ end
 --- This function is intended for INDEX mode where chapters are listed on a single page (not paginated).
 ---
 --- @param doc Document The parsed HTML document object representing the novel index page.
---- @return NovelChapter[] chapters A list of NovelChapter objects.
-local function parseChapters_fromIndex(doc, indexUrl)
+--- @param indexUrl string Base URL used for resolving relative paths.
+--- @param entryType NovelChapter | Novel Type of entries in result array.
+--- @return NovelChapter[]|Novel[] A list of NovelChapter or Novel objects.
+local function parseChapters_fromIndex(doc, indexUrl, entryType)
   local excludeSelector = settings[SID_INDEX_EXCLUDE_SELECTOR]
   local maxDepth = tonumber(settings[SID_INDEX_DEPTH])
 
@@ -167,10 +170,14 @@ local function parseChapters_fromIndex(doc, indexUrl)
   local chapters = {}
   if bestContainer then
     map(bestContainer:select("a"), function(a)
-      table.insert(chapters, NovelChapter {
+      local entry = entryType {
         title = a:text():match("^%s*(.-)%s*$") ~= "" and a:text() or "Untitled",
         link = resolveUrl(a:attr("href"), indexUrl),
-      })
+      }
+      if entryType == Novel and a:selectFirst("img") then
+        entry:setImageURL(resolveUrl(a:selectFirst("img"):attr("src"), indexUrl))
+      end
+      table.insert(chapters, entry)
     end)
   end
 
@@ -201,7 +208,7 @@ local function parseNovel_fromWebsite(novelUrl, loadChapters, isIndex)
 
   if loadChapters then
     if isIndex then
-      info:setChapters(parseChapters_fromIndex(doc, novelUrl))
+      info:setChapters(parseChapters_fromIndex(doc, novelUrl, NovelChapter))
     else
       info:setChapters({
         NovelChapter {
@@ -267,6 +274,10 @@ local function search(data)
         link = query,
       }
     }
+  elseif query:match(string.format("^%shttps?://", LISTING_PREFIX)) then
+    local url = query:sub(LISTING_PREFIX:len() + 1) -- remove listing prefix
+    local doc = GETDocument(url)
+    return parseChapters_fromIndex(doc, url, Novel)
   else
     return searchNovelUpdates(data)
   end
@@ -342,6 +353,22 @@ return {
   settings = {
     TextFilter(SID_INDEX_EXCLUDE_SELECTOR, "Index Exclude Selector (default: footer, header, nav, .nav, .footer, .header)"),
     TextFilter(SID_INDEX_DEPTH, "Index Depth (default: 3)"),
+    TriStateFilter(SID_USAGE_INFO, [[USAGE
+  In searchbar paste/type:
+
+  🔍 url
+  → Parse website as single-chapter novel
+
+  🔍 index:url
+  → Parse website with multiple links as multi-chapter novel
+
+  🔍 listing:url
+  → Parse website with multiple links as listing of separate single-chapter novels
+
+  🔍 keywords / search phrase
+  → Search for novels on NovelUpdates
+]]
+    ),
   },
   updateSetting = function(id, value)
     settings[id] = value
