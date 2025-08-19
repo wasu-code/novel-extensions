@@ -5,8 +5,11 @@
 local URL = "https://raw.githubusercontent.com/wasu-code/shosetsu-extensions/refs/heads/dev/src/dev/extension-template.lua"
 
 -- NOTE: This development extension uses the same ID as the target script.
---       This means downloaded chapters will be saved in the same directory 
---       as the original plugin's chapters.
+--       This means the following:
+--     ! Downloaded chapters will be saved in the same directory 
+--       as the original extension's chapters.
+--     ! To take effect settings must be changed on the original extension,
+--       not in !dev extension
 
 -- Fetch and load the remote script as a Lua chunk
 local extensionScript = GETDocument(URL):wholeText()
