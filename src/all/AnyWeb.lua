@@ -7,6 +7,7 @@ local HTMLToString = Require("unhtml").HTMLToString
 local novelUpdatesURL = "https://www.novelupdates.com"
 
 local INDEX_PREFIX = "index:"
+local LISTING_PREFIX = "listing:"
 
 -- Filters IDs
 local FID_SORT = 2
@@ -53,7 +54,7 @@ end
 ---
 --- @param doc Document The HTML document of the NovelUpdates novel page.
 --- @return NovelChapter[] chapters A list of NovelChapter objects, in ascending order.
-local function parseNovelUpdatesChapters(doc)
+local function parseChapters_fromNU(doc)
   if not doc:selectFirst("#logged_avatar") then
     error("Login in WebView to show chapters")
   end
@@ -89,7 +90,7 @@ end
 --- Parses novel and chapters from NovelUpdates metadata
 --- @param novelUrl string full novel url.
 --- @return NovelInfo
-local function parseNUNovel(novelUrl, loadChapters)
+local function parseNovel_fromNU(novelUrl, loadChapters)
   local doc = GETDocument(novelUrl)
 
   local info = NovelInfo {
@@ -113,7 +114,7 @@ local function parseNUNovel(novelUrl, loadChapters)
   }
 
   if loadChapters then
-    info:setChapters(parseNovelUpdatesChapters(doc))
+    info:setChapters(parseChapters_fromNU(doc))
   end
 
   return info
@@ -124,7 +125,7 @@ end
 ---
 --- @param doc Document The parsed HTML document object representing the novel index page.
 --- @return NovelChapter[] chapters A list of NovelChapter objects.
-local function parseWebsiteIndexChapters(doc, indexUrl)
+local function parseChapters_fromIndex(doc, indexUrl)
   local excludeSelector = settings[SID_INDEX_EXCLUDE_SELECTOR]
   local maxDepth = tonumber(settings[SID_INDEX_DEPTH])
 
@@ -179,7 +180,7 @@ end
 --- Parses any website as single- or multi-chapter (when prefixed with index prefix) novel
 --- @param novelUrl string full novel url.
 --- @return NovelInfo
-local function parseWebsiteNovel(novelUrl, loadChapters, isIndex)
+local function parseNovel_fromWebsite(novelUrl, loadChapters, isIndex)
   local doc = GETDocument(novelUrl)
 
   -- Attempt to extract metadata using OpenGraph tags
@@ -200,7 +201,7 @@ local function parseWebsiteNovel(novelUrl, loadChapters, isIndex)
 
   if loadChapters then
     if isIndex then
-      info:setChapters(parseWebsiteIndexChapters(doc, novelUrl))
+      info:setChapters(parseChapters_fromIndex(doc, novelUrl))
     else
       info:setChapters({
         NovelChapter {
@@ -216,14 +217,14 @@ end
 
 local function parseNovel(novelUrl, loadChapters)
   if novelUrl:find(novelUpdatesURL, 1, true) then
-    return parseNUNovel(novelUrl, loadChapters)
+    return parseNovel_fromNU(novelUrl, loadChapters)
   else
     local isIndex = false
     if novelUrl:sub(1, INDEX_PREFIX:len()) == INDEX_PREFIX then
       isIndex = true
       novelUrl = novelUrl:sub(INDEX_PREFIX:len() + 1)  -- remove the index prefix
     end
-    return parseWebsiteNovel(novelUrl, loadChapters, isIndex)
+    return parseNovel_fromWebsite(novelUrl, loadChapters, isIndex)
   end
 end
 
