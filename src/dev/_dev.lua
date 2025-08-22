@@ -2,15 +2,25 @@
 
 -- Source URL of the external Lua file you're working on to load dynamically  
 -- ! **Change accordingly** (eg. "http://ipv4:port/src/dev/extension-template.lua")
-local URL = "https://raw.githubusercontent.com/wasu-code/shosetsu-extensions/refs/heads/dev/src/dev/extension-template.lua"
+-- local URL = "https://raw.githubusercontent.com/wasu-code/shosetsu-extensions/refs/heads/dev/src/dev/extension-template.lua"
+local URL = "http://192.168.1.23:5500/src/all/AnyWeb.lua"
+
+-- NOTE: This development extension uses the same ID as the target script.
+--       Implications:
+--     ! Downloaded chapters will be stored in the same location 
+--       as the original extension’s chapters.
+--     ! Extension will use settings from the original extension, 
+--       not this dev version.
+--     → Overriding extension ID with 23119210 will fix the above, 
+--       but will break hot reload (will require app restart).
 
 -- Fetch and load the remote script as a Lua chunk
 local extensionScript = Request(GET(URL)):body():string()
-local extension = load(extensionScript, "devExt")()
+local chunkName = "devExt_" .. os.time() .. "_" .. math.random(1000)
+local extension = load(extensionScript, chunkName)()
 
 -- Override some fields (optional)
-extension.id = 23119210 -- needed for downloading and settings to work properly
-
+-- extension.id = 23119210 -- needed for downloading and settings to work properly, will break hot reload
 local originalName = extension.name
 extension.name = "!dev: " .. originalName
 
