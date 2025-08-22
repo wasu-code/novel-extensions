@@ -9,6 +9,29 @@ local novelUpdatesURL = "https://www.novelupdates.com"
 local INDEX_PREFIX = "index:"
 local LISTING_PREFIX = "listing:"
 
+local USER_MANUAL = string.format([[
+  How to use this extension?
+  In the search bar type/paste:
+
+  🔍 url
+  → Parse website as single-chapter novel
+
+  🔍 %surl
+  → Parse website with multiple links as multi-chapter novel
+
+  🔍 %surl
+  → Parse website with multiple links as listing of separate single-chapter novels
+
+  🔍 keywords / search phrase
+  → Search for novels on NovelUpdates
+]], INDEX_PREFIX, LISTING_PREFIX)
+
+local ANYWEB_MASCOT = [[
+(\_/)   
+( •,•)  
+(")_(")
+]]
+
 -- Filters IDs
 local FID_SORT = 2
 local FID_ORDER = 3
@@ -17,7 +40,7 @@ local FID_STATUS = 4
 -- Settings IDs
 local SID_INDEX_DEPTH = 1
 local SID_INDEX_EXCLUDE_SELECTOR = 2
-local SID_USAGE_INFO = 3
+local SID_USER_MANUAL = 3
 local settings = {
   [SID_INDEX_DEPTH] = 3,
   [SID_INDEX_EXCLUDE_SELECTOR] = "footer, header, nav, .nav, .footer, .header"
@@ -321,7 +344,9 @@ return {
 
   listings = {
     Listing("NovelUpdates", true, parseListing),
-    Listing("Dummy", false, function() error(string.format("\n\nAdd any website by pasting URL \n(or URL prefixed with %s for website with list of chapters)", INDEX_PREFIX)) end)
+    Listing("AnyWeb", false, function() error(
+      "\n\n" .. ANYWEB_MASCOT .. "\n\n" .. USER_MANUAL)
+    end)
   },
   parseNovel = parseNovel,
   getPassage = getPassage,
@@ -353,22 +378,7 @@ return {
   settings = {
     TextFilter(SID_INDEX_EXCLUDE_SELECTOR, "Index Exclude Selector (default: footer, header, nav, .nav, .footer, .header)"),
     TextFilter(SID_INDEX_DEPTH, "Index Depth (default: 3)"),
-    TriStateFilter(SID_USAGE_INFO, [[USAGE
-  In searchbar paste/type:
-
-  🔍 url
-  → Parse website as single-chapter novel
-
-  🔍 index:url
-  → Parse website with multiple links as multi-chapter novel
-
-  🔍 listing:url
-  → Parse website with multiple links as listing of separate single-chapter novels
-
-  🔍 keywords / search phrase
-  → Search for novels on NovelUpdates
-]]
-    ),
+    TriStateFilter(SID_USER_MANUAL, USER_MANUAL),
   },
   updateSetting = function(id, value)
     settings[id] = value
