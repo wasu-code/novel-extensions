@@ -1,5 +1,16 @@
 -- {"id":-1,"ver":"1.0.0","libVer":"1.0.0","author":"","repo":"","dep":["foo","bar"]}
 
+math.randomseed(os.time())
+
+--- Helper function for debug purposes
+local function tableToString(tbl)
+    local result = {}
+    for k, v in pairs(tbl) do
+        table.insert(result, k .. "=" .. tostring(v))
+    end
+    return "{" .. table.concat(result, ", ") .. "}"
+end
+
 --- Identification number of the extension.
 --- Should be unique. Should be consistent in all references.
 ---
@@ -28,7 +39,7 @@ local baseURL = "https://example.org/"
 --- Optional, Default is empty.
 ---
 --- @type string
-local imageURL = "https://example.web/asset/logo.png"
+local imageURL = "https://example.invalid/asset/logo.png"
 
 --- Shosetsu tries to handle cloudflare protection if this is set to true.
 ---
@@ -73,7 +84,7 @@ local searchFilters = {
 --- Notice, each key is surrounded by "[]" and the value is on the right side.
 --- @type table
 local settings = {
-	[1] = "test",
+	[1] = "settings no yet loaded: defaults are in use",
 	[2] = false,
 	[3] = false,
 	[4] = 2,
@@ -122,7 +133,12 @@ local listings = {
 
 		local document = GETDocument(url)
 
-		return {}
+		return {
+			Novel {
+				title = "Filters: " .. tableToString(data),
+				link = tostring(math.random(1e6)) -- always different novel (bypass caching)
+			}
+		}
 	end),
 	Listing("Something (with incrementing pages!)", true, function(data)
 		--- @type int
@@ -160,9 +176,9 @@ local function shrinkURL(url, type)
 	-- Thus you would then program two substitutions, one to remove URL/novel/,
 	--  and one to remove URL/chapter/
 	if type == KEY_NOVEL_URL then
-		return url:gsub(".-example%.web", "")
+		return url:gsub(".-example%.org", "")
 	else
-		return url:gsub(".-example%.web", "")
+		return url:gsub(".-example%.org", "")
 	end
 end
 
@@ -209,9 +225,12 @@ local function parseNovel(novelURL)
 	local url = shrinkURL(novelURL, KEY_NOVEL_URL)
 
 	--- Novel page, extract info from it.
-	local document = GETDocument(url)
+	-- local document = GETDocument(url)
 
-	return NovelInfo()
+	return NovelInfo {
+		title = "Settings",
+		description = tableToString(settings)
+	}
 end
 
 --- Called to search for novels off a website.
