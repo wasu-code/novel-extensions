@@ -20,7 +20,11 @@ jobs:
           git fetch origin dev:refs/remotes/origin/dev
           CHANGED=$(git diff --name-only origin/dev...${{ github.sha }} | grep '^src/.*\.lua$' || true)
           echo "Changed Lua files: $CHANGED"
-          echo "changed=$CHANGED" >> $GITHUB_OUTPUT
+          {
+            echo "changed<<EOF"
+            echo "$CHANGED"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
 
       - name: Restore extension tester from cache
         uses: actions/cache@v4
@@ -38,7 +42,8 @@ jobs:
         if: steps.changed.outputs.changed != ''
         run: |
           set -e
-          for file in ${{ steps.changed.outputs.changed }}; do
+          files=(${{ steps.changed.outputs.changed }})
+          for file in "${files[@]}"; do
             if [ ! -f "$file" ]; then continue; fi
             # Get header lines from current and dev branch
             old_header=$(git show origin/dev:"$file" 2>/dev/null | head -n 1)

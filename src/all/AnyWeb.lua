@@ -1,4 +1,4 @@
--- {"id": 23119214, "ver": "1.0.7", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=1.1.0", "url", "unhtml"]}
+-- {"id": 23119214, "ver": "1.0.8", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=1.1.0", "url", "unhtml"]}
 
 local parseArticle = Require("Readability").parse
 local qs = Require("url").querystring
@@ -7,6 +7,30 @@ local HTMLToString = Require("unhtml").HTMLToString
 local novelUpdatesURL = "https://www.novelupdates.com"
 
 local INDEX_PREFIX = "index:"
+local LISTING_PREFIX = "listing:"
+
+local USER_MANUAL = string.format([[
+  How to use this extension?
+  In the search bar type/paste:
+
+  🔍 url
+  → Parse website as single-chapter novel
+
+  🔍 %surl
+  → Parse website with multiple links as multi-chapter novel
+
+  🔍 %surl
+  → Parse website with multiple links as listing of separate single-chapter novels
+
+  🔍 keywords / search phrase
+  → Search for novels on NovelUpdates
+]], INDEX_PREFIX, LISTING_PREFIX)
+
+local ANYWEB_MASCOT = [[
+(\_/)   
+( •,•)  
+(")_(")
+]]
 
 -- Filters IDs
 local FID_SORT = 2
@@ -16,6 +40,7 @@ local FID_STATUS = 4
 -- Settings IDs
 local SID_INDEX_DEPTH = 1
 local SID_INDEX_EXCLUDE_SELECTOR = 2
+local SID_USER_MANUAL = 3
 local settings = {
   [SID_INDEX_DEPTH] = 3,
   [SID_INDEX_EXCLUDE_SELECTOR] = "footer, header, nav, .nav, .footer, .header"
@@ -53,7 +78,7 @@ end
 ---
 --- @param doc Document The HTML document of the NovelUpdates novel page.
 --- @return NovelChapter[] chapters A list of NovelChapter objects, in ascending order.
-local function parseNovelUpdatesChapters(doc)
+local function parseChapters_fromNU(doc)
   if not doc:selectFirst("#logged_avatar") then
     error("Login in WebView to show chapters")
   end
@@ -89,7 +114,7 @@ end
 --- Parses novel and chapters from NovelUpdates metadata
 --- @param novelUrl string full novel url.
 --- @return NovelInfo
-local function parseNUNovel(novelUrl, loadChapters)
+local function parseNovel_fromNU(novelUrl, loadChapters)
   local doc = GETDocument(novelUrl)
 
   local info = NovelInfo {
@@ -113,7 +138,7 @@ local function parseNUNovel(novelUrl, loadChapters)
   }
 
   if loadChapters then
-    info:setChapters(parseNovelUpdatesChapters(doc))
+    info:setChapters(parseChapters_fromNU(doc))
   end
 
   return info
@@ -123,8 +148,10 @@ end
 --- This function is intended for INDEX mode where chapters are listed on a single page (not paginated).
 ---
 --- @param doc Document The parsed HTML document object representing the novel index page.
---- @return NovelChapter[] chapters A list of NovelChapter objects.
-local function parseWebsiteIndexChapters(doc, indexUrl)
+--- @param indexUrl string Base URL used for resolving relative paths.
+--- @param entryType NovelChapter | Novel Type of entries in result array.
+--- @return NovelChapter[]|Novel[] A list of NovelChapter or Novel objects.
+local function parseChapters_fromIndex(doc, indexUrl, entryType)
   local excludeSelector = settings[SID_INDEX_EXCLUDE_SELECTOR]
   local maxDepth = tonumber(settings[SID_INDEX_DEPTH])
 
@@ -166,10 +193,14 @@ local function parseWebsiteIndexChapters(doc, indexUrl)
   local chapters = {}
   if bestContainer then
     map(bestContainer:select("a"), function(a)
-      table.insert(chapters, NovelChapter {
+      local entry = entryType {
         title = a:text():match("^%s*(.-)%s*$") ~= "" and a:text() or "Untitled",
         link = resolveUrl(a:attr("href"), indexUrl),
-      })
+      }
+      if entryType == Novel and a:selectFirst("img") then
+        entry:setImageURL(resolveUrl(a:selectFirst("img"):attr("src"), indexUrl))
+      end
+      table.insert(chapters, entry)
     end)
   end
 
@@ -179,7 +210,7 @@ end
 --- Parses any website as single- or multi-chapter (when prefixed with index prefix) novel
 --- @param novelUrl string full novel url.
 --- @return NovelInfo
-local function parseWebsiteNovel(novelUrl, loadChapters, isIndex)
+local function parseNovel_fromWebsite(novelUrl, loadChapters, isIndex)
   local doc = GETDocument(novelUrl)
 
   -- Attempt to extract metadata using OpenGraph tags
@@ -200,7 +231,7 @@ local function parseWebsiteNovel(novelUrl, loadChapters, isIndex)
 
   if loadChapters then
     if isIndex then
-      info:setChapters(parseWebsiteIndexChapters(doc, novelUrl))
+      info:setChapters(parseChapters_fromIndex(doc, novelUrl, NovelChapter))
     else
       info:setChapters({
         NovelChapter {
@@ -216,14 +247,14 @@ end
 
 local function parseNovel(novelUrl, loadChapters)
   if novelUrl:find(novelUpdatesURL, 1, true) then
-    return parseNUNovel(novelUrl, loadChapters)
+    return parseNovel_fromNU(novelUrl, loadChapters)
   else
     local isIndex = false
     if novelUrl:sub(1, INDEX_PREFIX:len()) == INDEX_PREFIX then
       isIndex = true
       novelUrl = novelUrl:sub(INDEX_PREFIX:len() + 1)  -- remove the index prefix
     end
-    return parseWebsiteNovel(novelUrl, loadChapters, isIndex)
+    return parseNovel_fromWebsite(novelUrl, loadChapters, isIndex)
   end
 end
 
@@ -266,6 +297,10 @@ local function search(data)
         link = query,
       }
     }
+  elseif query:match(string.format("^%shttps?://", LISTING_PREFIX)) then
+    local url = query:sub(LISTING_PREFIX:len() + 1) -- remove listing prefix
+    local doc = GETDocument(url)
+    return parseChapters_fromIndex(doc, url, Novel)
   else
     return searchNovelUpdates(data)
   end
@@ -309,7 +344,9 @@ return {
 
   listings = {
     Listing("NovelUpdates", true, parseListing),
-    Listing("Dummy", false, function() error(string.format("\n\nAdd any website by pasting URL \n(or URL prefixed with %s for website with list of chapters)", INDEX_PREFIX)) end)
+    Listing("AnyWeb", false, function() error(
+      "\n\n" .. ANYWEB_MASCOT .. "\n\n" .. USER_MANUAL)
+    end)
   },
   parseNovel = parseNovel,
   getPassage = getPassage,
@@ -341,6 +378,7 @@ return {
   settings = {
     TextFilter(SID_INDEX_EXCLUDE_SELECTOR, "Index Exclude Selector (default: footer, header, nav, .nav, .footer, .header)"),
     TextFilter(SID_INDEX_DEPTH, "Index Depth (default: 3)"),
+    TriStateFilter(SID_USER_MANUAL, USER_MANUAL),
   },
   updateSetting = function(id, value)
     settings[id] = value
