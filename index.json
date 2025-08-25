@@ -132,9 +132,9 @@
       "fileName": "extension-template",
       "imageURL": "https://example.invalid/asset/logo.png",
       "lang": "dev",
-      "ver": "1.0.0",
+      "ver": "1.0.1",
       "libVer": "1.0.0",
-      "md5": "c098246dd44cc957f99d29ae64911410c639bcd16c4d79720b5869796b345ae5",
+      "md5": "f261e54640e56591824fe0b1e3e69ab7e4143c7e9d7ccf163ab07c287fa1483a",
       "type": "LuaScript"
     },
     {
@@ -154,9 +154,9 @@
       "fileName": "Pokatne",
       "imageURL": "https://www.pokatne.pl/images/apple-touch-icon.png",
       "lang": "pl",
-      "ver": "1.0.1",
+      "ver": "1.0.2",
       "libVer": "1.0.0",
-      "md5": "47a64e81744dde631bd12b27c809ef0e672ffb289d70ab7ae1057f582e096550",
+      "md5": "5379283a96c0109b0fe7b72961eadd20a270496382b7f5551d9287407a9d2ed5",
       "type": "LuaScript"
     },
     {
@@ -165,9 +165,9 @@
       "fileName": "Reddit",
       "imageURL": "https://www.redditstatic.com/shreddit/assets/snoo_wave.png",
       "lang": "all",
-      "ver": "1.0.3",
+      "ver": "1.0.4",
       "libVer": "1.0.0",
-      "md5": "66cebc823118e0874f8fe6b72c160e5415b693474813bbbce4b9842e8b224dda",
+      "md5": "c0fbab07cd10813abc739b31899b75b9b1b74eeaa5781764b58f83dc8e654841",
       "type": "LuaScript"
     },
     {
@@ -187,9 +187,9 @@
       "fileName": "WebKomiksy",
       "imageURL": "https://www.webkomiksy.pl/favicon.ico",
       "lang": "pl",
-      "ver": "1.0.2",
+      "ver": "1.0.3",
       "libVer": "1.0.0",
-      "md5": "dc6ceeefac6900d8248ae747a04a9a0668f3861de7c3e89faeca747805165004",
+      "md5": "ed2e6e44ab7bd931a7fc826f8a2be59db1886a4109b3684243675e2933c38775",
       "type": "LuaScript"
     }
   ],
