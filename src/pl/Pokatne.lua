@@ -1,4 +1,4 @@
--- {"id": 23119211, "ver": "1.0.1", "libVer": "1.0.0", "author": "wasu-code", "dep": ["url>=1.0.0"]}
+-- {"id": 23119211, "ver": "1.0.2", "libVer": "1.0.0", "author": "wasu-code", "dep": ["url>=1.0.0"]}
 
 local qs = Require("url").querystring
 
@@ -17,7 +17,7 @@ local FID_MIN_RATING = 7
 local FID_YEAR = 8
 
 local function shrinkURL(url)
-  return url:gsub("^https://www.pokatne.pl/?", "")
+  return url:gsub("^https://www%.pokatne%.pl/?", "")
 end
 
 local function expandURL(url)

@@ -1,4 +1,4 @@
--- {"id":-1,"ver":"1.0.0","libVer":"1.0.0","author":"","repo":"","dep":["foo","bar"]}
+-- {"id":-1,"ver":"1.0.1","libVer":"1.0.0","author":"","repo":"","dep":["foo","bar"]}
 
 math.randomseed(os.time())
 
@@ -176,9 +176,9 @@ local function shrinkURL(url, type)
 	-- Thus you would then program two substitutions, one to remove URL/novel/,
 	--  and one to remove URL/chapter/
 	if type == KEY_NOVEL_URL then
-		return url:gsub(".-example%.org", "")
+		return url:gsub(".-example%.org/?", "")
 	else
-		return url:gsub(".-example%.org", "")
+		return url:gsub(".-example%.org/?", "")
 	end
 end
 
@@ -193,10 +193,12 @@ local function expandURL(url, type)
 	-- Currently the two branches are the same.
 	-- Read [shrinkURL] documentation in regards to what you should do.
 	-- Hint, this is the opposite.
+
+	url = url:gsub("^/*", "") -- remove leading slashes to avoid double slashes when concatenating
 	if type == KEY_NOVEL_URL then
-		return baseURL .. url
+		return baseURL .. "/" .. url
 	else
-		return baseURL .. url
+		return baseURL .. "/" .. url
 	end
 end
 

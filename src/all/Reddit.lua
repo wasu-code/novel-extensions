@@ -1,4 +1,4 @@
--- {"id": 23119212, "ver": "1.0.3", "libVer": "1.0.0", "author": "wasu-code", "dep": ["url>=1.0.0"]}
+-- {"id": 23119212, "ver": "1.0.4", "libVer": "1.0.0", "author": "wasu-code", "dep": ["url>=1.0.0"]}
 
 local qs = Require("url").querystring
 
@@ -32,11 +32,11 @@ local settings = {
 }
 
 local function shrinkURL(url)
-  return url:gsub("^https://www.reddit.com/?", "")
+  return url:gsub("^https://www%.reddit%.com/?", "")
 end
 
 local function expandURL(url)
-  return baseURL .. "/" .. url
+  return baseURL .. "/" .. url:gsub("^/*", "")
 end
 
 local function parseListing(doc)

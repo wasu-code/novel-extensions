@@ -1,4 +1,4 @@
--- {"id":23119215,"ver":"1.0.2","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["url>=1.0.0", "dkjson"]}
+-- {"id":23119215,"ver":"1.0.3","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["url>=1.0.0", "dkjson"]}
 
 local qs = Require("url").querystring
 local dkjson = Require("dkjson")
@@ -48,11 +48,11 @@ local SORT = {
 }
 
 local function shrinkURL(url)
-  return url:gsub("^https://www.webkomiksy.pl/?", "")
+  return url:gsub("^https://www%.webkomiksy%.pl/?", "")
 end
 
 local function expandURL(url)
-  return baseURL .. url
+  return baseURL .. "/" .. url:gsub("^/*", "")
 end
 
 local function parseListing(doc)
