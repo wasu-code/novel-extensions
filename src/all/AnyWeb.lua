@@ -4,6 +4,8 @@ local parseArticle = Require("Readability").parse
 local qs = Require("url").querystring
 local HTMLToString = Require("unhtml").HTMLToString
 
+math.randomseed(os.time())
+
 local novelUpdatesURL = "https://www.novelupdates.com"
 
 local INDEX_PREFIX = "index:"
@@ -41,9 +43,11 @@ local FID_STATUS = 4
 local SID_INDEX_DEPTH = 1
 local SID_INDEX_EXCLUDE_SELECTOR = 2
 local SID_USER_MANUAL = 3
+local SID_CUSTOM_LISTINGS = 4
 local settings = {
   [SID_INDEX_DEPTH] = 3,
-  [SID_INDEX_EXCLUDE_SELECTOR] = "footer, header, nav, .nav, .footer, .header"
+  [SID_INDEX_EXCLUDE_SELECTOR] = "footer, header, nav, .nav, .footer, .header",
+  [SID_CUSTOM_LISTINGS] = ""
 }
 
 local text = function(v)
@@ -53,22 +57,22 @@ end
 --- Resolves a possibly relative URL to an absolute URL based on the current URL.
 --- Handles absolute URLs, protocol-relative URLs, root-relative URLs, and relative paths.
 --- @param url string The URL to resolve (can be absolute or relative).
---- @param currentUrl string The base URL to resolve against.
+--- @param currentURL string The base URL to resolve against.
 --- @return string The resolved absolute URL.
-local function resolveUrl(url, currentUrl)
+local function resolveURL(url, currentURL)
   if url:match("^https?://") then
     return url
   elseif url:sub(1, 2) == "//" then
     -- Protocol-relative URL
-    local scheme = currentUrl:match("^(https?)://")
+    local scheme = currentURL:match("^(https?)://")
     return scheme and (scheme .. ":" .. url) or ("https:" .. url)
   elseif url:sub(1, 1) == "/" then
     -- Root-relative URL
-    local base = currentUrl:match("^(https?://[^/]+)")
+    local base = currentURL:match("^(https?://[^/]+)")
     return base and (base .. url) or url
   else
     -- Relative to current path
-    local base = currentUrl:match("^(https?://.*/)")
+    local base = currentURL:match("^(https?://.*/)")
     return base and (base .. url) or url
   end
 end
@@ -112,10 +116,10 @@ local function parseChapters_fromNU(doc)
 end
 
 --- Parses novel and chapters from NovelUpdates metadata
---- @param novelUrl string full novel url.
+--- @param novelURL string full novel url.
 --- @return NovelInfo
-local function parseNovel_fromNU(novelUrl, loadChapters)
-  local doc = GETDocument(novelUrl)
+local function parseNovel_fromNU(novelURL, loadChapters)
+  local doc = GETDocument(novelURL)
 
   local info = NovelInfo {
     title = doc:selectFirst(".seriestitlenu"):text(),
@@ -148,10 +152,10 @@ end
 --- This function is intended for INDEX mode where chapters are listed on a single page (not paginated).
 ---
 --- @param doc Document The parsed HTML document object representing the novel index page.
---- @param indexUrl string Base URL used for resolving relative paths.
+--- @param indexURL string Base URL used for resolving relative paths.
 --- @param entryType NovelChapter | Novel Type of entries in result array.
 --- @return NovelChapter[]|Novel[] A list of NovelChapter or Novel objects.
-local function parseChapters_fromIndex(doc, indexUrl, entryType)
+local function parseChapters_fromIndex(doc, indexURL, entryType)
   local excludeSelector = settings[SID_INDEX_EXCLUDE_SELECTOR]
   local maxDepth = tonumber(settings[SID_INDEX_DEPTH])
 
@@ -195,10 +199,10 @@ local function parseChapters_fromIndex(doc, indexUrl, entryType)
     map(bestContainer:select("a"), function(a)
       local entry = entryType {
         title = a:text():match("^%s*(.-)%s*$") ~= "" and a:text() or "Untitled",
-        link = resolveUrl(a:attr("href"), indexUrl),
+        link = resolveURL(a:attr("href"), indexURL),
       }
       if entryType == Novel and a:selectFirst("img") then
-        entry:setImageURL(resolveUrl(a:selectFirst("img"):attr("src"), indexUrl))
+        entry:setImageURL(resolveURL(a:selectFirst("img"):attr("src"), indexURL))
       end
       table.insert(chapters, entry)
     end)
@@ -208,17 +212,17 @@ local function parseChapters_fromIndex(doc, indexUrl, entryType)
 end
 
 --- Parses any website as single- or multi-chapter (when prefixed with index prefix) novel
---- @param novelUrl string full novel url.
+--- @param novelURL string full novel url.
 --- @return NovelInfo
-local function parseNovel_fromWebsite(novelUrl, loadChapters, isIndex)
-  local doc = GETDocument(novelUrl)
+local function parseNovel_fromWebsite(novelURL, loadChapters, isIndex)
+  local doc = GETDocument(novelURL)
 
   -- Attempt to extract metadata using OpenGraph tags
   local title = doc:selectFirst("meta[property='og:title']") and doc:selectFirst("meta[property='og:title']"):attr("content") 
                 or doc:selectFirst("title"):text()
   local description = doc:selectFirst("meta[property='og:description']") and doc:selectFirst("meta[property='og:description']"):attr("content") or nil
   local imageURL = doc:selectFirst("meta[property='og:image']") and doc:selectFirst("meta[property='og:image']"):attr("content") 
-                   or (doc:selectFirst("img[src]") and resolveUrl((doc:selectFirst("img[src]"):attr("src")), novelUrl))
+                   or (doc:selectFirst("img[src]") and resolveURL((doc:selectFirst("img[src]"):attr("src")), novelURL))
                    or nil
   local author = doc:selectFirst("meta[name='author']") and doc:selectFirst("meta[name='author']"):attr("content") or nil
 
@@ -231,12 +235,12 @@ local function parseNovel_fromWebsite(novelUrl, loadChapters, isIndex)
 
   if loadChapters then
     if isIndex then
-      info:setChapters(parseChapters_fromIndex(doc, novelUrl, NovelChapter))
+      info:setChapters(parseChapters_fromIndex(doc, novelURL, NovelChapter))
     else
       info:setChapters({
         NovelChapter {
           title = title,
-          link = novelUrl,
+          link = novelURL,
         }
       })
     end
@@ -245,21 +249,21 @@ local function parseNovel_fromWebsite(novelUrl, loadChapters, isIndex)
   return info
 end
 
-local function parseNovel(novelUrl, loadChapters)
-  if novelUrl:find(novelUpdatesURL, 1, true) then
-    return parseNovel_fromNU(novelUrl, loadChapters)
+local function parseNovel(novelURL, loadChapters)
+  if novelURL:find(novelUpdatesURL, 1, true) then
+    return parseNovel_fromNU(novelURL, loadChapters)
   else
     local isIndex = false
-    if novelUrl:sub(1, INDEX_PREFIX:len()) == INDEX_PREFIX then
+    if novelURL:sub(1, INDEX_PREFIX:len()) == INDEX_PREFIX then
       isIndex = true
-      novelUrl = novelUrl:sub(INDEX_PREFIX:len() + 1)  -- remove the index prefix
+      novelURL = novelURL:sub(INDEX_PREFIX:len() + 1)  -- remove the index prefix
     end
-    return parseNovel_fromWebsite(novelUrl, loadChapters, isIndex)
+    return parseNovel_fromWebsite(novelURL, loadChapters, isIndex)
   end
 end
 
-local function getPassage(chapterUrl)
-  local doc = GETDocument(chapterUrl)
+local function getPassage(chapterURL)
+  local doc = GETDocument(chapterURL)
   return pageOfElem(parseArticle(doc), true, "", true)
 end
 
@@ -324,6 +328,18 @@ local function parseListing(data)
   end)
 end
 
+local function splitLines(long_text)
+    -- trim leading and trailing whitespace
+    long_text = long_text:match("^%s*(.-)%s*$")
+
+    local lines = {}
+    for line in long_text:gmatch("[^\r\n]+") do
+        table.insert(lines, line)
+    end
+
+    return lines
+end
+
 return {
   id = 23119214,
   name = "AnyWeb (+NovelUpdates)",
@@ -346,6 +362,16 @@ return {
     Listing("NovelUpdates", true, parseListing),
     Listing("AnyWeb", false, function() error(
       "\n\n" .. ANYWEB_MASCOT .. "\n\n" .. USER_MANUAL)
+    end),
+    Listing("Custom", false, function ()
+      local links = splitLines(settings[SID_CUSTOM_LISTINGS])
+      if #links < 1 then
+        error("Add listing URL(s) in extension settings")
+      end
+
+      local listingURL = links[math.random(1, #links)]
+      local doc = GETDocument(listingURL)
+      return parseChapters_fromIndex(doc, listingURL, Novel)
     end)
   },
   parseNovel = parseNovel,
@@ -378,6 +404,7 @@ return {
   settings = {
     TextFilter(SID_INDEX_EXCLUDE_SELECTOR, "Index Exclude Selector (default: footer, header, nav, .nav, .footer, .header)"),
     TextFilter(SID_INDEX_DEPTH, "Index Depth (default: 3)"),
+    TextFilter(SID_CUSTOM_LISTINGS, "URL(s) for Custom Listing (one per line)"),
     TriStateFilter(SID_USER_MANUAL, USER_MANUAL),
   },
   updateSetting = function(id, value)
