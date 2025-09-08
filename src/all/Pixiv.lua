@@ -2,6 +2,7 @@
 
 local json = Require("dkjson")
 local qs = Require("url").querystring
+local encode = Require("url").encode
 
 local PAGE_SIZE = 30
 
@@ -131,11 +132,12 @@ local function search(data)
     s_mode = "s_tag_full",
     gs = 0,
     lang = "en" -- TODO
-  }, apiURL_search .. "/" .. query)
+  }, apiURL_search .. "/" .. encode(query))
 
   local jsonData = json.GET(searchUrl)
+  local novels = jsonData.body.novel.data
 
-  return map(jsonData.body.novel.data, function (novel)
+  return map(novels, function (novel)
     return toNovel(novel)
   end)
 end
