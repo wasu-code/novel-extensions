@@ -3,8 +3,11 @@
 local json = Require("dkjson")
 local qs = Require("url").querystring
 
+local PAGE_SIZE = 30
+
 local baseURL = "https://www.pixiv.net/novel"
 local apiURL = "https://www.pixiv.net/ajax/novel"
+local apiURL_search = "https://www.pixiv.net/ajax/search/novels"
 
 local function shrinkURL(url, type)
   return url:gsub(".-pixiv%.net/(ajax/)?novel/?", "")
@@ -12,8 +15,13 @@ end
 
 local function expandURL(url, type)
   -- type is provided -> function is executed by Shosetsu -> use baseURL
-  if (type) then
-    -- TODO novel url: https://www.pixiv.net/novel/show.php?id=25767227
+  if type then
+    -- url consist of digits only -> it's novel id
+    if url:match("^%d+$") then
+      -- format for opening in WebView
+      url = "show.php?id=" .. url
+    end
+
     return baseURL .. "/" .. url:gsub("^/*", "")
   end
 
@@ -28,7 +36,7 @@ local function toNovel(n)
       imageURL = n.url:gsub("i%.pximg%.net", "i.pixiv.re"),
       -- additional info
       -- alternativeTitles = n.titleCaptionTranslation
-      tags = n.tags,
+      genres = n.tags,
       authors = {n.userName},
       description = n.description,
       wordCount = n.wordCount,
@@ -37,9 +45,9 @@ local function toNovel(n)
     }
 end
 
-local function getListing(url)
-  local data = json.GET(url)
-  local novels = data.body.thumbnails.novel
+local function parseListing(url)
+  local jsonData = json.GET(url)
+  local novels = jsonData.body.thumbnails.novel
 
   return map(novels, function (novel)
     return toNovel(novel)
@@ -48,34 +56,56 @@ end
 
 local function parseNovel(url, loadChapters)
   local isSeries = url:match("series/")
-  local data = json.GET(url)
+  local data = json.GET(expandURL(url))
   local novel = data.body
 
-  --info for one-shot
   local info = NovelInfo {
     title = novel.title,
     -- alternativeTitles
     link = tostring((isSeries and "series/" or "") .. novel.id),
-    status = novel.isConcluded and NovelStatus.COMPLETED or NovelStatus.PUBLISHING,
-    tags = isSeries and novel.tags or map(novel.tags.tags, function (tag)
+    status = (not isSeries and NovelStatus.COMPLETED) -- One-shot
+      or (novel.isConcluded and NovelStatus.COMPLETED or NovelStatus.PUBLISHING), -- Series
+    genres = isSeries and novel.tags or map(novel.tags.tags, function (tag)
       return tag.tag
     end),
     authors = {novel.userName},
-    imageURL = (isSeries and novel.cover.urls[1] or novel.coverUrl):gsub("i%.pximg%.net", "i.pixiv.re"),
     description = isSeries and novel.caption or novel.description,
     language = novel.language,
-    chapterCount = novel.publishedContentCount, -- .displaySeriesContentCount ot .total
+    chapterCount = novel.publishedContentCount, -- or .displaySeriesContentCount or .total
     wordCount = novel.publishedTotalWordCount,
   }
 
-  if (isSeries) then
-    -- TODO
+  local imageURL = (isSeries and novel.cover and novel.cover.urls and novel.cover.urls["240mw"]) or novel.coverUrl or nil
+  if imageURL then info:setImageURL(imageURL:gsub("i%.pximg%.net", "i.pixiv.re")) end
+
+  if not loadChapters then
+    return info
+  end
+
+  if isSeries then
+    local seriesData = json.GET(qs({
+      limit = PAGE_SIZE,
+      last_order = 0,
+      order_by = "asc",
+      lang = "en" -- TODO
+    }, expandURL("series_content/14226723")))
+
+    local chapters = map(seriesData.body.page.seriesContents, function (n)
+      return NovelChapter {
+        title = n.title,
+        link = n.id,
+        release = os.date("%Y-%m-%d %H:%M:%S", n.reuploadTimestamp or n.uploadTimestamp),
+        order = n.series.contentOrder
+      }
+    end)
+
+    info:setChapters(chapters)
   else
     info:setChapters({
       NovelChapter {
         title = novel.title,
         link = novel.id,
-        release = novel.uploadDate
+        release = novel.uploadDate:sub(1, 10)
       }
     })
   end
@@ -84,13 +114,10 @@ local function parseNovel(url, loadChapters)
 end
 
 local function getPassage(url)
-  local data = json.GET(url)
-  return data.body.content
+  local data = json.GET(expandURL(url))
+  return data.body.content:gsub("\n", "<br/>")
 end
 
--- https://www.pixiv.net/ajax/search/novels/girl?word=girl&order=date_d&mode=all&p=1&csw=0&s_mode=s_tag_full&gs=0&lang=en
--- https://www.pixiv.net/ajax/search/novels/happy%20girl?word=happy%20girl&order=date_d&mode=all&p=1&csw=0
--- &s_mode=s_tag_full&gs=0&lang=en
 local function search(data)
   local query = data[QUERY]
   local page = data[PAGE]
@@ -104,7 +131,7 @@ local function search(data)
     s_mode = "s_tag_full",
     gs = 0,
     lang = "en" -- TODO
-  }, "https://www.pixiv.net/ajax/search/novels/" .. query)
+  }, apiURL_search .. "/" .. query)
 
   local jsonData = json.GET(searchUrl)
 
@@ -126,10 +153,15 @@ return {
 
   listings = {
   -- https://www.pixiv.net/ajax/top/novel?mode=all&lang=en
-    Listing("Editor's picks", false, function (data, inc)
-      return getListing("https://www.pixiv.net/ajax/novel/editors_picks?limit=30&lang=en")
+    Listing("Editor's picks", true, function (data, inc)
+      return parseListing(qs({
+        limit = PAGE_SIZE,
+        lang = "en" -- TODO from settings
+      }, expandURL("/editors_picks")))
     end),
-    
+    -- Listing("Popular original novels", true, function ()
+    --   return parseListing("https://www.pixiv.net/ajax/genre/novel/all?mode=safe&lang=en")
+    -- end)
   },
   -- searchFilters = searchFilters,
 
