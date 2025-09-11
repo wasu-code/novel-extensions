@@ -1,4 +1,4 @@
--- {"id":23119216,"ver":"0.0.0","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["dkjson>=1.0.1", "url>=0.0.4"]}
+-- {"id":23119217,"ver":"1.0.0","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["dkjson>=1.0.1", "url>=0.0.4"]}
 
 ---@alias Novel NovelInfo
 
@@ -302,7 +302,7 @@ local function search(data)
 end
 
 return {
-  id = 23119216,
+  id = 23119217,
   name = "Pixiv",
   baseURL = baseURL,
   imageURL = "https://s.pximg.net/common/images/apple-touch-icon.png?20250206",
@@ -335,7 +335,7 @@ return {
       }, "https://www.pixiv.net/ajax/follow_latest/novel"),
       "body", "thumbnails", "novel")
     end),
-    Listing("Your watchlist", true, function (data)
+    Listing("Your watchlist (Login required)", true, function (data)
       return parseListing(qs({
         p = data[PAGE],
         new = 1,
