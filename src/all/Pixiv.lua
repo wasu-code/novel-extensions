@@ -38,12 +38,6 @@ local FID_GENRE = 13
 local orderFilter = IndexedMap({
   {"Newest", "date_d"},
   {"Oldest", "date"},
-  {"Most popular (Premium)", "popular_d"},
-  {"Least popular (Premium)", "popular"},
-  {"Most popular among males (Premium)", "popular_male_d"},
-  {"Least popular among males (Premium)", "popular_male"},
-  {"Most popular among females (Premium)", "popular_d_female"},
-  {"Least popular among females (Premium)", "popular_female"},
 }, 0)
 
 local modeFilter = IndexedMap({
@@ -280,16 +274,16 @@ local function search(data)
 
   local params = {
     word = query,
-    order = orderFilter:valueAt(data[FID_ORDER] or 0),
-    mode = modeFilter:valueAt(data[FID_MODE] or 0),
+    order = orderFilter:valueAt(data[FID_ORDER]),
+    mode = modeFilter:valueAt(data[FID_MODE]),
     p = page,
     csw = 0,
-    s_mode = searchModeFilter:valueAt(data[FID_SEARCH_MODE] or 0),
+    s_mode = searchModeFilter:valueAt(data[FID_SEARCH_MODE]),
     gs = data[FID_GROUP_SERIES] and 1 or 0, -- group into series
     lang = "en"
   }
-  local selectedLang = languageFilter:valueAt(data[FID_SEARCH_MODE] or 0)
-  if not selectedLang == "all" then params["work_lang"] = selectedLang end
+  local selectedLang = languageFilter:valueAt(data[FID_LANGUAGE])
+  if not (selectedLang == "all") then params["work_lang"] = selectedLang end
 
   local searchUrl = qs(params, apiURL_search .. "/" .. encode(query))
 
@@ -324,13 +318,13 @@ return {
       return parseListing(qs({
         mode = modeFilter:valueAt(data[FID_MODE]),
         lang = "en"
-      }, "https://www.pixiv.net/ajax/genre/novel/" .. genreFilter:valueAt(data[FID_GENRE] or 0)),
+      }, "https://www.pixiv.net/ajax/genre/novel/" .. genreFilter:valueAt(data[FID_GENRE])),
       "body", "thumbnails", "novelSeries")
     end),
     Listing("Followed users (Login required)", true, function (data)
       return parseListing(qs({
         p = data[PAGE],
-        mode = modeFilter:valueAt(data[FID_MODE] or 0),
+        mode = modeFilter:valueAt(data[FID_MODE]),
         lang = "en"
       }, "https://www.pixiv.net/ajax/follow_latest/novel"),
       "body", "thumbnails", "novel")
