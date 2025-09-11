@@ -33,6 +33,7 @@ local FID_READING_TIME = 9
 local FID_ORIGINAL_ONLY = 10
 local FID_SEARCH_MODE = 11
 local FID_GROUP_SERIES = 12
+local FID_GENRE = 13
 
 local orderFilter = IndexedMap({
   {"Newest", "date_d"},
@@ -83,6 +84,27 @@ local languageFilter = IndexedMap({
   {"Русский", "ru"},
   {"العربية", "ar"},
   {"ไทย", "th"},
+  {"Other", "other"}
+}, 0)
+
+local genreFilter = IndexedMap({
+  {"All Genres", "all"},
+  {"Romance", "romance"},
+  {"Isekai fantasy", "isekai_fantasy"},
+  {"Contemporary fantasy", "contemporary_fantasy"},
+  {"Mystery", "mystery"},
+  {"Horror", "horror"},
+  {"Sci-fi", "sci-fi"},
+  {"Literature", "literature"},
+  {"Drama", "drama"},
+  {"Historical pieces", "historical_pieces"},
+  {"BL (yaoi)", "bl"},
+  {"Yuri", "yuri"},
+  {"For kids", "for_kids"},
+  {"Poetry", "poetry"},
+  {"Essays/non-fiction", "non-fiction"},
+  {"Screenplays/scripts", "screenplays"},
+  {"Reviews/opinion pieces", "reviews"},
   {"Other", "other"}
 }, 0)
 
@@ -172,9 +194,18 @@ local function expandURL(url, type)
   return apiURL .. "/" .. url:gsub("^/*", "")
 end
 
-local function parseListing(url)
+---@param url string
+---@param ... string strings representing path in json structure
+---@return table Novels converted entries (empty table if path does not exist)
+--- local novels = parseListing(url, "body", "thumbnails", "novel")
+local function parseListing(url, ...)
   local jsonData = json.GET(url)
-  local novels = jsonData.body.thumbnails.novel
+  local novels = jsonData
+
+  for i = 1, select("#", ...) do
+      novels = novels[select(i, ...)]
+      if not novels then return {} end
+  end
 
   return map(novels, function (novel)
     return PixivListingEntry:toNovel(novel)
@@ -282,15 +313,36 @@ return {
   expandURL = expandURL,
 
   listings = {
-    Listing("Editor's picks", true, function (data, inc)
+    Listing("Editor's picks", false, function ()
       return parseListing(qs({
         limit = PAGE_SIZE,
         lang = "en"
-      }, expandURL("/editors_picks")))
+      }, "https://www.pixiv.net/ajax/novel/editors_picks"),
+      "body", "thumbnails", "novel")
     end),
-    -- Listing("Popular original novels", true, function ()
-    --   return parseListing("https://www.pixiv.net/ajax/genre/novel/all?mode=safe&lang=en")
-    -- end)
+    Listing("Popular original novels", false, function (data)
+      return parseListing(qs({
+        mode = modeFilter:valueAt(data[FID_MODE]),
+        lang = "en"
+      }, "https://www.pixiv.net/ajax/genre/novel/" .. genreFilter:valueAt(data[FID_GENRE] or 0)),
+      "body", "thumbnails", "novelSeries")
+    end),
+    Listing("Followed users (Login required)", true, function (data)
+      return parseListing(qs({
+        p = data[PAGE],
+        mode = modeFilter:valueAt(data[FID_MODE] or 0),
+        lang = "en"
+      }, "https://www.pixiv.net/ajax/follow_latest/novel"),
+      "body", "thumbnails", "novel")
+    end),
+    Listing("Your watchlist", true, function (data)
+      return parseListing(qs({
+        p = data[PAGE],
+        new = 1,
+        lang = "en"
+      }, "https://www.pixiv.net/ajax/watch_list/novel?p=1&new=1&lang=en"),
+      "body", "thumbnails", "novelSeries")
+    end)
   },
   searchFilters = {
     FilterGroup("Search filters", {
@@ -303,6 +355,13 @@ return {
       --Text length
       CheckboxFilter(FID_ORIGINAL_ONLY, "Only original works"),
       CheckboxFilter(FID_GROUP_SERIES, "Group into series")
+    }),
+    FilterGroup("Listing: Popular original novels", {
+      DropdownFilter(FID_MODE, "Browsing mode \n(All is not supported)", modeFilter.keys),
+      DropdownFilter(FID_GENRE, "Genre", genreFilter.keys)
+    }),
+    FilterGroup("Listing: Followed users", {
+      DropdownFilter(FID_MODE, "Browsing mode \n(Safe is not supported)", modeFilter.keys),
     })
   },
 
