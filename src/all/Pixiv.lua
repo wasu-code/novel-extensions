@@ -1,8 +1,9 @@
--- {"id":23119216,"ver":"0.0.0","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["dkjson>=1.0.1", "url"]}
+-- {"id":23119216,"ver":"0.0.0","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["dkjson>=1.0.1", "url>=0.0.4"]}
 
 local json = Require("dkjson")
 local qs = Require("url").querystring
 local encode = Require("url").encode
+local IndexedMap = Require("IndexedMap")
 
 local PAGE_SIZE = 30
 
@@ -10,8 +11,72 @@ local baseURL = "https://www.pixiv.net/novel"
 local apiURL = "https://www.pixiv.net/ajax/novel"
 local apiURL_search = "https://www.pixiv.net/ajax/search/novels"
 
+-- Filters
+local FID_ORDER = 2
+local FID_MODE = 3
+local FID_PERIOD = 4
+local FID_BOOKMARKS = 5
+local FID_LANGUAGE = 6
+local FID_CHARACTER_COUNT = 7
+local FID_WORD_COUNT = 8
+local FID_READING_TIME = 9
+local FID_ORIGINAL_ONLY = 10
+local FID_SEARCH_MODE = 11
+
+local orderFilter = IndexedMap({
+  {"Newest", "date_d"},
+  {"Oldest", "date"},
+  {"Most popular (Premium)", "popular_d"},
+  {"Least popular (Premium)", "popular"},
+  {"Most popular among males (Premium)", "popular_male_d"},
+  {"Least popular among males (Premium)", "popular_male"},
+  {"Most popular among females (Premium)", "popular_d_female"},
+  {"Least popular among females (Premium)", "popular_female"},
+}, 0)
+
+local modeFilter = IndexedMap({
+  {"Show all", "all"},
+  {"Safe", "safe"},
+  {"R-18 (Login required)", "r18"}
+}, 0)
+
+local searchModeFilter = IndexedMap({
+  {"Tags, Titles, Captions", "s_tag"},
+  {"Tags (exact match)", "s_tag_full"},
+  {"Tags (partial match)", "s_tag_only"},
+  {"Text", "s_tc"}
+}, 0)
+
+local languageFilter = IndexedMap({
+  {"All languages", "all"},
+  {"English", "en"},
+  {"日本語", "ja"},
+  {"한국어", "ko"},
+  {"简体中文", "zh-cn"},
+  {"繁體中文", "zh-cw"},
+  {"Bahasa Indonesia", "id"},
+  {"Dansk", "da"},
+  {"Deutsch", "de"},
+  {"Español", "es"},
+  {"Español (Latinoamérica)", "es-419"},
+  {"Filipino", "tl"},
+  {"Français", "fr"},
+  {"Hrvatski", "hr"},
+  {"Italiano", "it"},
+  {"Nederlands", "nl"},
+  {"Polski", "pl"},
+  {"Português (Brasil)", "pt-br"},
+  {"Português (Portugal)", "pt-pt"},
+  {"Tiếng Việt", "vi"},
+  {"Türkçe", "tr"},
+  {"Русский", "ru"},
+  {"العربية", "ar"},
+  {"ไทย", "th"},
+  {"Other", "other"}
+}, 0)
+
 local function shrinkURL(url, type)
-  return url:gsub(".-pixiv%.net/(ajax/)?novel/?", "")
+  return url:gsub(".-pixiv%.net/(ajax/)?novel/(show%.php%?id=)?", "")
 end
 
 local function expandURL(url, type)
@@ -32,17 +97,9 @@ end
 
 local function toNovel(n)
   return Novel {
-      title = n.seriesTitle or n.title,
+      title = n.title,
       link = tostring(n.seriesId and "series/" .. n.seriesId or n.id),
       imageURL = n.url:gsub("i%.pximg%.net", "i.pixiv.re"),
-      -- additional info
-      -- alternativeTitles = n.titleCaptionTranslation
-      genres = n.tags,
-      authors = {n.userName},
-      description = n.description,
-      wordCount = n.wordCount,
-      favoriteCount = n.bookmarkCount,
-      language = n.language
     }
 end
 
@@ -88,8 +145,8 @@ local function parseNovel(url, loadChapters)
       limit = PAGE_SIZE,
       last_order = 0,
       order_by = "asc",
-      lang = "en" -- TODO
-    }, expandURL("series_content/14226723")))
+      lang = "en"
+    }, expandURL("series_content/" .. novel.id)))
 
     local chapters = map(seriesData.body.page.seriesContents, function (n)
       return NovelChapter {
@@ -123,16 +180,20 @@ local function search(data)
   local query = data[QUERY]
   local page = data[PAGE]
 
-  local searchUrl = qs({
+  local params = {
     word = query,
-    order = "date_d",
-    mode = "all", -- TODO from filters
+    order = orderFilter:valueAt(data[FID_ORDER] or 0),
+    mode = modeFilter:valueAt(data[FID_MODE] or 0),
     p = page,
     csw = 0,
-    s_mode = "s_tag_full",
-    gs = 0,
-    lang = "en" -- TODO
-  }, apiURL_search .. "/" .. encode(query))
+    s_mode = searchModeFilter:valueAt(data[FID_SEARCH_MODE] or 0),
+    gs = 0, -- group into series
+    lang = "en"
+  }
+  local selectedLang = languageFilter:valueAt(data[FID_SEARCH_MODE] or 0)
+  if not selectedLang == "all" then params["work_lang"] = selectedLang end
+
+  local searchUrl = qs(params, apiURL_search .. "/" .. encode(query))
 
   local jsonData = json.GET(searchUrl)
   local novels = jsonData.body.novel.data
@@ -154,18 +215,29 @@ return {
   expandURL = expandURL,
 
   listings = {
-  -- https://www.pixiv.net/ajax/top/novel?mode=all&lang=en
     Listing("Editor's picks", true, function (data, inc)
       return parseListing(qs({
         limit = PAGE_SIZE,
-        lang = "en" -- TODO from settings
+        lang = "en"
       }, expandURL("/editors_picks")))
     end),
     -- Listing("Popular original novels", true, function ()
     --   return parseListing("https://www.pixiv.net/ajax/genre/novel/all?mode=safe&lang=en")
     -- end)
   },
-  -- searchFilters = searchFilters,
+  searchFilters = {
+    FilterGroup("Search filters", {
+      DropdownFilter(FID_SEARCH_MODE, "Search target", searchModeFilter.keys),
+      DropdownFilter(FID_MODE, "Browsing mode", modeFilter.keys),
+      DropdownFilter(FID_ORDER, "Order", orderFilter.keys),
+      DropdownFilter(FID_LANGUAGE, "Work language", languageFilter.keys),
+      --Period
+      --Bookmarks
+      --Work language
+      --Text length
+      CheckboxFilter(FID_ORIGINAL_ONLY, "Only original works")
+    })
+  },
 
   parseNovel = parseNovel,
   getPassage = getPassage,
