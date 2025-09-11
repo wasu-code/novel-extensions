@@ -3,9 +3,10 @@
 ---@alias Novel NovelInfo
 
 local json = Require("dkjson")
-local qs = Require("url").querystring
-local encode = Require("url").encode
 local IndexedMap = Require("IndexedMap")
+local urlLib = Require("url")
+local qs = urlLib.querystring
+local encode = urlLib.encode
 
 local PAGE_SIZE = 30
 
@@ -85,9 +86,7 @@ local languageFilter = IndexedMap({
   {"Other", "other"}
 }, 0)
 
---- Retrieves URL of cover image from provided PixivListingNovel object
----@param n PixivListingNovel novel object returned by pixiv API
----@return string|nil URL URL of cover or nil
+--- Retrieves URL of cover image from provided Pixiv Novel
 local function getCover(n)
   local url = nil
   -- when entry represents a single novel
@@ -103,39 +102,20 @@ end
 ---@class PixivListingEntry
 ---@field id string novel or series ID
 ---@field title string novel or series title
----@field tags table
----@field isOriginal boolean
----@field aiType number
----@field readingTime number
----@field userName string
----@field wordCount number
----@field bookmarkCount number
----unused in Shosetsu
----field xRestrict number
----field genre number
----field restrict number
----field userId string
----field profileImageUrl string
----field useWordCount boolean
 local PixivListingEntry = {}
 
 ---@class PixivListingNovel : PixivListingEntry
----@field description string
 ---@field url string cover URL
----@field language string
----@field createDate string
----@field updateDate string
 ---@field seriesId string|nil
 ---@field seriesTitle string|nil
---- textCount
---- isBookmarkable
---- bookmarkData
---- maker
---- isMasked
---- isUnlisted
---- visibilityScope
 local PixivListingNovel = {}
 
+---@class PixivListingSeries : PixivListingEntry
+---@field cover table
+---@field isOneshot boolean
+---@field isConcluded boolean|nil
+---@field novelId string|nil
+local PixivListingSeries = {}
 
 --- Converts a PixivListingEntry object to a Shosetsu Novel object
 ---@param n PixivListingNovel The PixivListingNovel object to convert
@@ -147,37 +127,8 @@ function PixivListingNovel:toNovel(n)
     -- If part of series link to whole series
     link = n.seriesId and ("series/" .. n.seriesId) or n.id,
     imageURL = n.url:gsub("i%.pximg%.net", "i.pixiv.re"),
-
-    -- language = n.language,
-    -- description = n.description,
-    -- status = (n.seriesId and NovelStatus.UNKNOWN) or NovelStatus.COMPLETED,
-    -- -- tags = n.tags or {},
-    -- genres = n.tags or {},
-    -- authors = { n.userName },
-    -- wordCount = n.wordCount,
-    -- favoriteCount = n.bookmarkCount,
   }
 end
-
----@class PixivListingSeries : PixivListingEntry
----@field createDateTime string
----@field updateDateTime string
----@field cover table
----@field caption string
----@field isOneshot boolean
----@field isConcluded boolean|nil
----@field episodeCount number|nil
----@field publishedWordCount number
----@field novelId string|nil
---- publishedEpisodeCount,
---- latestPublishDateTime,
---- latestEpisodeId,
---- isWatched,
---- isNotifying,
---- textLength,
---- publishedTextLength,
---- publishedReadingTime
-local PixivListingSeries = {}
 
 --- Converts a PixivListingEntry object to a Shosetsu Novel object
 ---@param n PixivListingSeries The PixivListingSeries object to convert
@@ -188,17 +139,12 @@ function PixivListingSeries:toNovel(n)
     -- if oneshot link directly to novel
     link = n.novelId and n.novelId or ("series/" .. n.id),
     imageURL = n.cover.urls["240mw"]:gsub("i%.pximg%.net", "i.pixiv.re"),
-
-    -- description = n.caption,
-    -- -- if isConcluded is not present (it's oneshot) or is true then mark as completed
-    -- status = n.isConcluded == false and NovelStatus.PUBLISHING or NovelStatus.COMPLETED,
-    -- genres = n.tags or {},
-    -- authors = { n.userName },
-    -- wordCount = n.wordCount,
-    -- favoriteCount = n.bookmarkCount
   }
 end
 
+--- Converts a PixivListingEntry object to a Shosetsu Novel object
+---@param n {} Object with PixivListingEntry data
+---@return Novel Novel Shosetsu Novel object
 function PixivListingEntry:toNovel(n)
   -- isOneshot property is returned only when grouped as series
   local isSeries = n.isOneshot ~= nil
@@ -242,7 +188,6 @@ local function parseNovel(url, loadChapters)
 
   local info = NovelInfo {
     title = novel.title,
-    -- alternativeTitles
     link = tostring((isSeries and "series/" or "") .. novel.id),
     status = (not isSeries and NovelStatus.COMPLETED) -- One-shot
       or (novel.isConcluded and NovelStatus.COMPLETED or NovelStatus.PUBLISHING), -- Series
@@ -252,7 +197,6 @@ local function parseNovel(url, loadChapters)
     authors = {novel.userName},
     description = isSeries and novel.caption or novel.description,
     language = novel.language,
-    chapterCount = novel.publishedContentCount, -- or .displaySeriesContentCount or .total
     wordCount = novel.publishedTotalWordCount,
   }
 
@@ -377,4 +321,3 @@ return {
     settings[id] = value
   end,
 }
-
