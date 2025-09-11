@@ -1,5 +1,7 @@
 -- {"id":23119216,"ver":"0.0.0","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["dkjson>=1.0.1", "url>=0.0.4"]}
 
+---@alias Novel NovelInfo
+
 local json = Require("dkjson")
 local qs = Require("url").querystring
 local encode = Require("url").encode
@@ -10,6 +12,13 @@ local PAGE_SIZE = 30
 local baseURL = "https://www.pixiv.net/novel"
 local apiURL = "https://www.pixiv.net/ajax/novel"
 local apiURL_search = "https://www.pixiv.net/ajax/search/novels"
+
+-- Settings
+local SID_USE_SERIES_NAME = 1
+
+local settings = {
+  [SID_USE_SERIES_NAME] = false
+}
 
 -- Filters
 local FID_ORDER = 2
@@ -22,6 +31,7 @@ local FID_WORD_COUNT = 8
 local FID_READING_TIME = 9
 local FID_ORIGINAL_ONLY = 10
 local FID_SEARCH_MODE = 11
+local FID_GROUP_SERIES = 12
 
 local orderFilter = IndexedMap({
   {"Newest", "date_d"},
@@ -75,6 +85,127 @@ local languageFilter = IndexedMap({
   {"Other", "other"}
 }, 0)
 
+--- Retrieves URL of cover image from provided PixivListingNovel object
+---@param n PixivListingNovel novel object returned by pixiv API
+---@return string|nil URL URL of cover or nil
+local function getCover(n)
+  local url = nil
+  -- when entry represents a single novel
+  if n.url then url = n.url end
+  -- when entry represents a novel series
+  if n.cover then url = n.cover.urls["240mw"] end
+
+  if n.coverUrl then url = n.coverUrl end
+
+  return url and url:gsub("i%.pximg%.net", "i.pixiv.re", 1)
+end
+
+---@class PixivListingEntry
+---@field id string novel or series ID
+---@field title string novel or series title
+---@field tags table
+---@field isOriginal boolean
+---@field aiType number
+---@field readingTime number
+---@field userName string
+---@field wordCount number
+---@field bookmarkCount number
+---unused in Shosetsu
+---field xRestrict number
+---field genre number
+---field restrict number
+---field userId string
+---field profileImageUrl string
+---field useWordCount boolean
+local PixivListingEntry = {}
+
+---@class PixivListingNovel : PixivListingEntry
+---@field description string
+---@field url string cover URL
+---@field language string
+---@field createDate string
+---@field updateDate string
+---@field seriesId string|nil
+---@field seriesTitle string|nil
+--- textCount
+--- isBookmarkable
+--- bookmarkData
+--- maker
+--- isMasked
+--- isUnlisted
+--- visibilityScope
+local PixivListingNovel = {}
+
+
+--- Converts a PixivListingEntry object to a Shosetsu Novel object
+---@param n PixivListingNovel The PixivListingNovel object to convert
+---@return Novel ShosetsuNovel Shosetsu Novel object
+function PixivListingNovel:toNovel(n)
+  return Novel {
+    -- Use series title if available (and enabled in settings), otherwise use novel title
+    title = (settings[SID_USE_SERIES_NAME] and n.seriesTitle) and n.seriesTitle or n.title,
+    -- If part of series link to whole series
+    link = n.seriesId and ("series/" .. n.seriesId) or n.id,
+    imageURL = n.url:gsub("i%.pximg%.net", "i.pixiv.re"),
+
+    -- language = n.language,
+    -- description = n.description,
+    -- status = (n.seriesId and NovelStatus.UNKNOWN) or NovelStatus.COMPLETED,
+    -- -- tags = n.tags or {},
+    -- genres = n.tags or {},
+    -- authors = { n.userName },
+    -- wordCount = n.wordCount,
+    -- favoriteCount = n.bookmarkCount,
+  }
+end
+
+---@class PixivListingSeries : PixivListingEntry
+---@field createDateTime string
+---@field updateDateTime string
+---@field cover table
+---@field caption string
+---@field isOneshot boolean
+---@field isConcluded boolean|nil
+---@field episodeCount number|nil
+---@field publishedWordCount number
+---@field novelId string|nil
+--- publishedEpisodeCount,
+--- latestPublishDateTime,
+--- latestEpisodeId,
+--- isWatched,
+--- isNotifying,
+--- textLength,
+--- publishedTextLength,
+--- publishedReadingTime
+local PixivListingSeries = {}
+
+--- Converts a PixivListingEntry object to a Shosetsu Novel object
+---@param n PixivListingSeries The PixivListingSeries object to convert
+---@return Novel ShosetsuNovel Shosetsu Novel object
+function PixivListingSeries:toNovel(n)
+  return Novel {
+    title = n.title,
+    -- if oneshot link directly to novel
+    link = n.novelId and n.novelId or ("series/" .. n.id),
+    imageURL = n.cover.urls["240mw"]:gsub("i%.pximg%.net", "i.pixiv.re"),
+
+    -- description = n.caption,
+    -- -- if isConcluded is not present (it's oneshot) or is true then mark as completed
+    -- status = n.isConcluded == false and NovelStatus.PUBLISHING or NovelStatus.COMPLETED,
+    -- genres = n.tags or {},
+    -- authors = { n.userName },
+    -- wordCount = n.wordCount,
+    -- favoriteCount = n.bookmarkCount
+  }
+end
+
+function PixivListingEntry:toNovel(n)
+  -- isOneshot property is returned only when grouped as series
+  local isSeries = n.isOneshot ~= nil
+
+  return isSeries and PixivListingSeries:toNovel(n) or PixivListingNovel:toNovel(n)
+end
+
 local function shrinkURL(url, type)
   return url:gsub(".-pixiv%.net/(ajax/)?novel/(show%.php%?id=)?", "")
 end
@@ -95,20 +226,12 @@ local function expandURL(url, type)
   return apiURL .. "/" .. url:gsub("^/*", "")
 end
 
-local function toNovel(n)
-  return Novel {
-      title = n.title,
-      link = tostring(n.seriesId and "series/" .. n.seriesId or n.id),
-      imageURL = n.url:gsub("i%.pximg%.net", "i.pixiv.re"),
-    }
-end
-
 local function parseListing(url)
   local jsonData = json.GET(url)
   local novels = jsonData.body.thumbnails.novel
 
   return map(novels, function (novel)
-    return toNovel(novel)
+    return PixivListingEntry:toNovel(novel)
   end)
 end
 
@@ -133,8 +256,8 @@ local function parseNovel(url, loadChapters)
     wordCount = novel.publishedTotalWordCount,
   }
 
-  local imageURL = (isSeries and novel.cover and novel.cover.urls and novel.cover.urls["240mw"]) or novel.coverUrl or nil
-  if imageURL then info:setImageURL(imageURL:gsub("i%.pximg%.net", "i.pixiv.re")) end
+  local imageURL = getCover(novel)
+  if imageURL then info:setImageURL(imageURL) end
 
   if not loadChapters then
     return info
@@ -187,7 +310,7 @@ local function search(data)
     p = page,
     csw = 0,
     s_mode = searchModeFilter:valueAt(data[FID_SEARCH_MODE] or 0),
-    gs = 0, -- group into series
+    gs = data[FID_GROUP_SERIES] and 1 or 0, -- group into series
     lang = "en"
   }
   local selectedLang = languageFilter:valueAt(data[FID_SEARCH_MODE] or 0)
@@ -199,7 +322,7 @@ local function search(data)
   local novels = jsonData.body.novel.data
 
   return map(novels, function (novel)
-    return toNovel(novel)
+    return PixivListingEntry:toNovel(novel)
   end)
 end
 
@@ -233,9 +356,9 @@ return {
       DropdownFilter(FID_LANGUAGE, "Work language", languageFilter.keys),
       --Period
       --Bookmarks
-      --Work language
       --Text length
-      CheckboxFilter(FID_ORIGINAL_ONLY, "Only original works")
+      CheckboxFilter(FID_ORIGINAL_ONLY, "Only original works"),
+      CheckboxFilter(FID_GROUP_SERIES, "Group into series")
     })
   },
 
@@ -247,8 +370,11 @@ return {
   -- startIndex = startIndex,
   search = search,
 
-  settings = {},
+  settings = {
+    CheckboxFilter(SID_USE_SERIES_NAME, "Use series title in listings \n\n (May require \"More » Settings » Advanced » Remove Novel Cache\" to apply to already loaded novels)")
+  },
   updateSetting = function(id, value)
-    -- settings[id] = value
+    settings[id] = value
   end,
 }
+
