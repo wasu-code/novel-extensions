@@ -152,7 +152,7 @@ local function parseNovel(url, loadChapters)
       return NovelChapter {
         title = n.title,
         link = n.id,
-        release = os.date("%Y-%m-%d %H:%M:%S", n.reuploadTimestamp or n.uploadTimestamp),
+        release = os.date("%Y-%m-%d", n.reuploadTimestamp or n.uploadTimestamp),
         order = n.series.contentOrder
       }
     end)
