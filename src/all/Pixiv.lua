@@ -295,6 +295,32 @@ local function search(data)
   end)
 end
 
+--- Returns user ID or nil if not logged in
+local function getUserID()
+    if not CookieJar then error("No cookie jar") end
+
+    -- Load cookies
+    local cookies = CookieJar():loadForRequest(HttpUrl(baseURL))
+
+    for i = 0, cookies:size() - 1 do
+        local cookie = cookies:get(i)
+        if cookie:name() == "PHPSESSID" then
+            local value = cookie:value()
+            -- take part before first "_"
+            local beforeUnderscore = value:match("^(.-)_(.+)$")
+            return beforeUnderscore
+        end
+    end
+
+    return nil
+end
+
+local function isLoggedIn()
+  if not CookieJar then return true end -- fix for stable™ release
+
+  return getUserID() ~= nil
+end
+
 return {
   id = 23119217,
   name = "Pixiv",
@@ -321,7 +347,9 @@ return {
       }, "https://www.pixiv.net/ajax/genre/novel/" .. genreFilter:valueAt(data[FID_GENRE])),
       "body", "thumbnails", "novelSeries")
     end),
-    Listing("Followed users (Login required)", true, function (data)
+    Listing("Followed users 🔒", true, function (data)
+      if not isLoggedIn() then error("Login in WebView") end
+
       return parseListing(qs({
         p = data[PAGE],
         mode = modeFilter:valueAt(data[FID_MODE]),
@@ -329,13 +357,38 @@ return {
       }, "https://www.pixiv.net/ajax/follow_latest/novel"),
       "body", "thumbnails", "novel")
     end),
-    Listing("Your watchlist (Login required)", true, function (data)
+    Listing("Your watchlist 🔒", true, function (data)
+      if not isLoggedIn() then error("Login in WebView") end
+
       return parseListing(qs({
         p = data[PAGE],
         new = 1,
         lang = "en"
-      }, "https://www.pixiv.net/ajax/watch_list/novel?p=1&new=1&lang=en"),
+      }, "https://www.pixiv.net/ajax/watch_list/novel"),
       "body", "thumbnails", "novelSeries")
+    end),
+    Listing("Recommended 🔒", false, function (data)
+      if not isLoggedIn() then error("Login in WebView") end
+
+      return parseListing(qs({
+        mode = modeFilter:valueAt(data[FID_MODE]),
+        limit = 100,
+        lang = "en"
+      }, "https://www.pixiv.net/ajax/discovery/novels"),
+      "body", "thumbnails", "novel")
+    end),
+    Listing("Bookmarks 🔒", true, function (data)
+      local userID = getUserID()
+      if not userID then error("Login in WebView") end
+
+      return parseListing(qs({
+        tag = "",
+        offset = PAGE_SIZE * (data[PAGE] - 1),
+        limit = PAGE_SIZE,
+        rest = "show",
+        lang = "en"
+      }, "https://www.pixiv.net/ajax/user/" .. userID .. "/novels/bookmarks"),
+      "body", "works")
     end)
   },
   searchFilters = {
