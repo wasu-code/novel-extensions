@@ -1,16 +1,16 @@
 {
   "authors": [
     {
-      "id": -821183208,
-      "name": "TechnoJo4",
-      "desc": "Worked on 247truyen, CommonCSS, Madara, NovelFull, WWVolare, url",
+      "id": -706869138,
+      "name": "wasu-code",
+      "desc": "Worked on !dev: Example, AnyWeb (+NovelUpdates), IndexedMap, Pokatne, Readability, Reddit, WebKomiksy",
       "imageURL": "",
       "website": ""
     },
     {
-      "id": -706869138,
-      "name": "wasu-code",
-      "desc": "Worked on !dev: Example, AnyWeb (+NovelUpdates), Pokatne, Readability, Reddit, WebKomiksy",
+      "id": -821183208,
+      "name": "TechnoJo4",
+      "desc": "Worked on 247truyen, CommonCSS, Madara, NovelFull, WWVolare, url",
       "imageURL": "",
       "website": ""
     },
@@ -69,6 +69,12 @@
       "ver": "1.0.1",
       "url": null,
       "hash": "eb398cff152cf1ff1a7ca7ad415f55bf55aca0acefafb5363982e083de18a67d"
+    },
+    {
+      "name": "IndexedMap",
+      "ver": "0.0.4",
+      "url": null,
+      "hash": "1cf29bc449657457c33db61865b910141df0b8ab387f75fe9dded39928718000"
     },
     {
       "name": "Madara",
