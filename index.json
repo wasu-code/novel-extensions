@@ -3,7 +3,7 @@
     {
       "id": -706869138,
       "name": "wasu-code",
-      "desc": "Worked on !dev: Example, AnyWeb (+NovelUpdates), IndexedMap, Pokatne, Readability, Reddit, WebKomiksy",
+      "desc": "Worked on !dev: Example, AnyWeb (+NovelUpdates), IndexedMap, Pixiv, Pokatne, Readability, Reddit, WebKomiksy",
       "imageURL": "",
       "website": ""
     },
@@ -196,6 +196,17 @@
       "ver": "1.0.3",
       "libVer": "1.0.0",
       "md5": "ed2e6e44ab7bd931a7fc826f8a2be59db1886a4109b3684243675e2933c38775",
+      "type": "LuaScript"
+    },
+    {
+      "id": 23119217,
+      "name": "Pixiv",
+      "fileName": "Pixiv",
+      "imageURL": "https://s.pximg.net/common/images/apple-touch-icon.png?20250206",
+      "lang": "all",
+      "ver": "1.0.0",
+      "libVer": "1.0.0",
+      "md5": "40e19949b382d586e403ebbdcec54debefeaff152158206cf5768f3400699647",
       "type": "LuaScript"
     }
   ],
