@@ -59,6 +59,10 @@ jobs:
             fi
           done
 
+      - name: Generate index.json
+        run: |
+          java -jar extension-tester.jar --ci --generate-index
+
       - name: Run extension tester on changed Lua files
         if: steps.changed.outputs.changed != ''
         run: |
