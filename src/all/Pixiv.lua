@@ -43,7 +43,17 @@ local orderFilter = IndexedMap({
 local modeFilter = IndexedMap({
   {"Show all", "all"},
   {"Safe", "safe"},
-  {"R-18 (Login required)", "r18"}
+  {"R-18 🔒", "r18"}
+}, 0)
+
+local modeFilter_popular = IndexedMap({
+  {"Safe", "safe"},
+  {"R-18 🔒", "r18"}
+}, 0)
+
+local modeFilter_followed = IndexedMap({
+  {"Show all", "all"},
+  {"R-18 🔒", "r18"}
 }, 0)
 
 local searchModeFilter = IndexedMap({
@@ -82,7 +92,9 @@ local languageFilter = IndexedMap({
 }, 0)
 
 local genreFilter = IndexedMap({
-  {"All Genres", "all"},
+  {"All Genres 👶", "all"},
+  {"Popular with male 🔞", "male"},
+  {"popular with female 🔞", "female"},
   {"Romance", "romance"},
   {"Isekai fantasy", "isekai_fantasy"},
   {"Contemporary fantasy", "contemporary_fantasy"},
@@ -94,7 +106,7 @@ local genreFilter = IndexedMap({
   {"Historical pieces", "historical_pieces"},
   {"BL (yaoi)", "bl"},
   {"Yuri", "yuri"},
-  {"For kids", "for_kids"},
+  {"For kids 👶", "for_kids"},
   {"Poetry", "poetry"},
   {"Essays/non-fiction", "non-fiction"},
   {"Screenplays/scripts", "screenplays"},
@@ -341,10 +353,15 @@ return {
       "body", "thumbnails", "novel")
     end),
     Listing("Popular original novels", false, function (data)
+      local genre = genreFilter:valueAt(data[FID_GENRE])
+      local mode = ((genre == "all" or genre == "for_kids") and "safe")
+                or ((genre == "male" or genre == "female") and "r18")
+                or modeFilter_popular:valueAt(data[FID_MODE])
+
       return parseListing(qs({
-        mode = modeFilter:valueAt(data[FID_MODE]),
+        mode = mode,
         lang = "en"
-      }, "https://www.pixiv.net/ajax/genre/novel/" .. genreFilter:valueAt(data[FID_GENRE])),
+      }, "https://www.pixiv.net/ajax/genre/novel/" .. genre),
       "body", "thumbnails", "novelSeries")
     end),
     Listing("Followed users 🔒", true, function (data)
@@ -352,7 +369,7 @@ return {
 
       return parseListing(qs({
         p = data[PAGE],
-        mode = modeFilter:valueAt(data[FID_MODE]),
+        mode = modeFilter_followed:valueAt(data[FID_MODE]),
         lang = "en"
       }, "https://www.pixiv.net/ajax/follow_latest/novel"),
       "body", "thumbnails", "novel")
@@ -404,11 +421,11 @@ return {
       CheckboxFilter(FID_GROUP_SERIES, "Group into series")
     }),
     FilterGroup("Listing: Popular original novels", {
-      DropdownFilter(FID_MODE, "Browsing mode \n(All is not supported)", modeFilter.keys),
+      DropdownFilter(FID_MODE, "Browsing mode", modeFilter_popular.keys),
       DropdownFilter(FID_GENRE, "Genre", genreFilter.keys)
     }),
     FilterGroup("Listing: Followed users", {
-      DropdownFilter(FID_MODE, "Browsing mode \n(Safe is not supported)", modeFilter.keys),
+      DropdownFilter(FID_MODE, "Browsing mode", modeFilter_followed.keys),
     })
   },
 
@@ -421,7 +438,13 @@ return {
   search = search,
 
   settings = {
-    CheckboxFilter(SID_USE_SERIES_NAME, "Use series title in listings \n\n (May require \"More » Settings » Advanced » Remove Novel Cache\" to apply to already loaded novels)")
+    CheckboxFilter(SID_USE_SERIES_NAME, "Use series title in listings \n\n (May require \"More » Settings » Advanced » Remove Novel Cache\" to apply to already loaded novels)"),
+    HeaderFilter and HeaderFilter([[
+    Legend:
+    🔒 - Login required
+    👶 - Available only in "Safe" mode 
+    🔞 - Available only in "R-18" mode
+    ]])
   },
   updateSetting = function(id, value)
     settings[id] = value
