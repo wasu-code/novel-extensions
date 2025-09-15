@@ -1,4 +1,4 @@
--- {"ver":"0.0.4","author":"wasu-code"}
+-- {"ver":"0.0.5","author":"wasu-code"}
 
 --- A generic indexed map structure (supports 0-based or 1-based indexing)
 ---@param tbl table A table of key-value pairs
@@ -21,9 +21,23 @@ local function IndexedMap(tbl, startIndex)
     self.map[key] = value
   end
 
+  function self:adjustIndex(i)
+    if type(i) ~= "number" or i < self.startIndex then
+      i = self.startIndex
+    end
+    return i - self.startIndex + 1
+  end
+
   -- Methods
-  function self:keyAt(i) return self.keys[i - self.startIndex + 1] end
-  function self:valueAt(i) return self.values[i - self.startIndex + 1] end
+  function self:keyAt(i)
+    local idx = self:adjustIndex(i)
+    return self.keys[idx]
+  end
+
+  function self:valueAt(i)
+    local idx = self:adjustIndex(i)
+    return self.values[idx]
+  end
 
   function self:getValue(key) return self.map[key] end
 
