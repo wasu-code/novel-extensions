@@ -6,7 +6,7 @@
 
 Extensions for [Shosetsu](https://gitlab.com/shosetsuorg/shosetsu) app.
 
-To add repo to app copy [this link](https://raw.githubusercontent.com/wasu-code/shosetsu-extensions/refs/heads/dev/).
+To add repo to app copy [this link](https://raw.githubusercontent.com/wasu-code/novel-extensions/refs/heads/dev/).
 
 </div>
 
@@ -25,5 +25,5 @@ All extensions I create in this repo are prefixed with `2311921`.
 [Extension template][lua-template]
 
 [lua-template]: https://gitlab.com/shosetsuorg/kotlin-lib/-/raw/main/templates/extension-template.lua
-[bug-report]: https://github.com/wasu-code/shosetsu-extensions/issues/new
-[issues]: https://github.com/wasu-code/shosetsu-extensions/issues
+[bug-report]: https://github.com/wasu-code/novel-extensions/issues/new
+[issues]: https://github.com/wasu-code/novel-extensions/issues
