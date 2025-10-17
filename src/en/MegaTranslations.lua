@@ -96,11 +96,11 @@ local function getPassage(url)
     local story = doc:selectFirst(".entry-content")
 
     local wpComments = story:selectFirst(".wp-block-comments")
-    local prev = wpComments:previousElementSibling()
+    local prev = wpComments and wpComments:previousElementSibling()
     if prev and prev:tagName() == "p" and prev:selectFirst("a") then
       prev:remove() -- remove ToC/Navigation links
     end
-    if not settings[1] then wpComments:remove() end
+    if not settings[1] and wpComments then wpComments:remove() end
 
   return pageOfElem(story, false)
 end
