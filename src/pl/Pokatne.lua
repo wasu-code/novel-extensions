@@ -1,4 +1,4 @@
--- {"id": 23119211, "ver": "1.0.2", "libVer": "1.0.0", "author": "wasu-code", "dep": ["url>=1.0.0"]}
+-- {"id": 23119211, "ver": "1.0.3", "libVer": "1.0.0", "author": "wasu-code", "dep": ["url>=1.0.0"]}
 
 local qs = Require("url").querystring
 
@@ -98,6 +98,14 @@ local function parseNovel(url, loadChapters)
 
   local title = isSeries and doc:selectFirst(".series a"):text() or doc:selectFirst("header h1"):text()
 
+  local imageURL = doc:selectFirst('meta[property="og:image"]'):attr("content")
+  -- default cover returns 404
+  if imageURL == "https://www.pokatne.pl/files/covers/800x500.png" then
+    imageURL = DEFAULT_COVER
+  end
+
+  local tags = map(doc:select("header .tags li a"), function(v) return v:text() end)
+
   local status
   if isSeries then
       local seriesCompleted = doc:selectFirst('[data-original-title="Seria zakończona"]') ~= nil
@@ -111,8 +119,9 @@ local function parseNovel(url, loadChapters)
 
   local info = NovelInfo {
     title = title,
-    imageURL = doc:selectFirst('meta[property="og:image"]'):attr("content"),
-    tags = map(doc:select(".tags li a"), function(v) return v:text() end),
+    imageURL = imageURL,
+    tags = tags,
+    genres = tags,
     status = status
   }
   if authorElem then info:setAuthors({authorElem:text()}) end
