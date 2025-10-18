@@ -160,9 +160,9 @@
       "fileName": "Pokatne",
       "imageURL": "https://www.pokatne.pl/images/apple-touch-icon.png",
       "lang": "pl",
-      "ver": "1.0.2",
+      "ver": "1.0.3",
       "libVer": "1.0.0",
-      "md5": "5379283a96c0109b0fe7b72961eadd20a270496382b7f5551d9287407a9d2ed5",
+      "md5": "83bad017ccdae9383475613bb43bd90d016e53b7e0946cd432341c4eccac7f4e",
       "type": "LuaScript"
     },
     {
