@@ -3,7 +3,7 @@
     {
       "id": -706869138,
       "name": "wasu-code",
-      "desc": "Worked on !dev: Example, AnyWeb (+NovelUpdates), IndexedMap, Pixiv, Pokatne, Readability, Reddit, WebKomiksy",
+      "desc": "Worked on !dev: Example, AnyWeb (+NovelUpdates), IndexedMap, MegaTranslations, Pixiv, Pokatne, Readability, Reddit, WebKomiksy",
       "imageURL": "",
       "website": ""
     },
@@ -174,6 +174,17 @@
       "ver": "1.0.4",
       "libVer": "1.0.0",
       "md5": "c0fbab07cd10813abc739b31899b75b9b1b74eeaa5781764b58f83dc8e654841",
+      "type": "LuaScript"
+    },
+    {
+      "id": 23119213,
+      "name": "MegaTranslations",
+      "fileName": "MegaTranslations",
+      "imageURL": "https://1.gravatar.com/avatar/74b24baa6e6a4a71642701f4ed57cc47eb2d86fba6284c575ee32628affa9fba?size=128",
+      "lang": "en",
+      "ver": "0.0.1",
+      "libVer": "1.0.0",
+      "md5": "fcf9545674a6781b8fd56c0ff6eabdff98a06bdfd3cf60408381a91b9b7d8510",
       "type": "LuaScript"
     },
     {
