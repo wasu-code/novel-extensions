@@ -1,4 +1,4 @@
--- {"ver":"2.9.1","author":"TechnoJo4","dep":["url"]}
+-- {"ver":"2.9.2","author":"TechnoJo4","dep":["url"]}
 
 local encode = Require("url").encode
 local text = function(v)
@@ -264,15 +264,17 @@ function defaults:parseNovel(url, loadChapters)
 		if self.chaptersOrderReversed then
 			chapterOrder = chapterList:size()
 		end
-		local novelList = AsList(map(chapterList, function(v)
+		local novelList = AsList(mapNotNil(chapterList, function(v)
 			if self.chaptersOrderReversed then
 				chapterOrder = chapterOrder - 1
 			else
 				chapterOrder = chapterOrder + 1
 			end
+			local link = self.shrinkURL(v:selectFirst("a"):attr("href"))
+			if link == "#" then return nil end
 			return NovelChapter{
 				title = v:selectFirst("a"):text(),
-				link = self.shrinkURL(v:selectFirst("a"):attr("href")),
+				link = link,
 				release = v:selectFirst("span.chapter-release-date"):text(),
 				order = chapterOrder
 			}

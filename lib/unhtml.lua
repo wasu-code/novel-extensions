@@ -1,4 +1,4 @@
--- {"ver":"1.0.0","author":"Bigrand","dep":["utf8"]}
+-- {"ver":"1.0.1","author":"Bigrand","dep":["utf8"]}
 
 --[[
     This lib turns HTML into plain text.
@@ -76,7 +76,7 @@ local divP              = "</div>(%s*)<p>"
 local brTag             = "<%s*br%s*/?%s*>"
 local closeTag          = "^</%s*([a-z0-9-]+)"
 local openTag           = "^<%s*([a-z0-9-]+)"
-local hrTag             = "<%s*/?%s*hr%s*/?%s*>"
+local hrTag             = "<%s*/?%s*hr[^>]*%s*/?%s*>"
 local htmlEntity        = "(&%a+;)"
 local decimalEntity     = "&#(%d+);"
 local hexadecimalEntity = "&#x(%x+);"
@@ -85,7 +85,7 @@ local brWS              = "<br>%s*"
 local brLi              = "(<br>%s*)<li%s*>"
 local openLi            = "<li%s*>"
 local closeLi           = "</li%s*>"
-local multiNewline      = "\n\n\n+"
+local multiNewline      = "%s*\n%s*\n%s*\n+%s*"
 local tableBlock        = "<table.-</table>"
 local trBlock           = "<tr.-</tr>"
 local tableCell         = "<(t[dh])[^>]*>(.-)</%1>"
@@ -605,7 +605,6 @@ local function limitNewlines(s)
     return gsub(s, multiNewline, "\n\n")
 end
 
-
 ---Replaces image tags with their alt text. If an image has alt text, the format will be `[Image: <alt-text>]`.
 ---if no alt text is found, it will be replaced with `[Image]`.
 ---
@@ -876,7 +875,7 @@ local function HTMLToString(s, config)
     end
 
     -- Edge-case check
-    if shouldExecute(s, "</div>") and shouldExecute(s, "<p>") then
+    if shouldExecute(s, "</div") and shouldExecute(s, "<p") then
         s = fixDivPBreaks(s)
     end
 
@@ -884,7 +883,7 @@ local function HTMLToString(s, config)
                         "td", "th", "thead", "tbody", "tfoot"}
     s = removeUnallowedTags(s, allowedTags)
 
-    if shouldExecute(s, {"<hr", "</hr>"}) then
+    if shouldExecute(s, {"<hr", "</hr"}) then
         s = formatHrTags(s, hrTagSeparator, hrTagSeparatorLength)
     end
 
@@ -892,7 +891,7 @@ local function HTMLToString(s, config)
         s = newlineToSpace(s)
     end
 
-    if shouldExecute(s, {"<li", "</li>"}) then
+    if shouldExecute(s, {"<li", "</li"}) then
         s = formatLists(s, listBulletPointCharacter)
     end
 

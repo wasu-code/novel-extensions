@@ -1,5 +1,6 @@
--- {"ver":"1.0.5","author":"JFronny","dep":["url>=1.0.0"]}
+-- {"ver":"1.0.10","author":"JFronny","dep":["unhtml>=1.0.0","url>=1.0.0"]}
 
+local HTMLToString = Require("unhtml").HTMLToString
 local qs = Require("url").querystring
 
 -- concatenate two lists
@@ -16,8 +17,6 @@ end
 local text = function(v)
     return v:text()
 end
-
-local settings = {}
 
 local defaults = {
     hasCloudFlare = false,
@@ -48,7 +47,7 @@ function defaults:getPassage(url)
     local id = url:gsub(".*#", "")
     local post = doc:selectFirst("#js-" .. id)
     local message = post:selectFirst(".bbWrapper")
-    message:prepend("<h1>" .. post:selectFirst(".threadmarkLabel"):text() .. "</h1>")
+    message:select(".bbCodeBlock-expandLink, .bbCodeBlock-shrinkLink"):remove()
 
     return pageOfElem(message, true)
 end
@@ -59,6 +58,14 @@ local function extractImage(baseURL, element)
     if img == nil then return "" end
     img = img:gsub("^/", baseURL):gsub("?[0-9]*$", "")
     return img
+end
+
+local function extractTitle(element)
+    map(element:select(".unreadLink"), function(v) v:remove() end)
+    map(element:select(".labelLink"), function(v) v:remove() end)
+    map(element:select(".label"), function(v) v:remove() end)
+    map(element:select(".label-append"), function(v) v:remove() end)
+    return element:text()
 end
 
 function defaults:parseNovel(novelURL, loadChapters)
@@ -83,12 +90,26 @@ function defaults:parseNovel(novelURL, loadChapters)
         -- this _does_ mean that we have to make an additional request for most novels, but it's the only way to get the avatar here
         img = GETDocument(self.baseURL .. "members/." .. username:get(0):attr("data-user-id") .. "?tooltip=true"):selectFirst(".memberTooltip-avatar img")
     end
+    local title = threadmarks:select(".p-title-value")
+    if title == nil then
+        title = head:selectFirst("meta[property='og:title']"):attr("content")
+    else
+        title = extractTitle(title)
+    end
+    local description = threadmarks:select(".threadmarkListingHeader-extraInfo .bbWrapper")
+    if description == nil then
+        description = head:selectFirst("meta[name='description']"):attr("content")
+    else
+        description = HTMLToString(description)
+    end
+    local tags = map(threadmarks:select(".threadmarkListingHeader-tags a"), text)
     local novel = NovelInfo {
-        title = head:selectFirst("meta[property='og:title']"):attr("content"),
+        title = title,
         imageURL = extractImage(self.baseURL, img),
-        description = head:selectFirst("meta[name='description']"):attr("content"),
+        description = description,
         authors = map(username, text),
-        status = s
+        status = s,
+        tags = tags
     }
 
     if loadChapters then
@@ -133,10 +154,41 @@ local function handleNovelURL(url)
     return url
 end
 
+---@param shortNum string
+---@return number
+local function expandNumber(shortNum)
+    local number, suffix = shortNum:match("^(%d+%.?%d*)([kKmMbB]?)$")
+
+    number = tonumber(number)
+    if not number then return nil end
+
+    if suffix == "k" or suffix == "K" then
+        return math.floor(number * 1e3 + 0.5)
+    elseif suffix == "m" or suffix == "M" then
+        return math.floor(number * 1e6 + 0.5)
+    elseif suffix == "b" or suffix == "B" then
+        return math.floor(number * 1e9 + 0.5)
+    else
+        return math.floor(number + 0.5)
+    end
+end
+
 local CATEGORY_FILTER_KEY = 100
 local ORDER_BY_FILTER_KEY = 200
 
+-- We need to find the search ID to get pages greater than 1.
+-- It can change per search request, so we must keep it in memory
+-- so when the next page is requested it doesn't get stuck in the first page
+local searchID = "1"
+local totalPages = 1 -- Store the total amount of search pages to avoid duplication
 function defaults:search(data)
+    -- The search ID can change what is shown, most probably any value higher than 0 works,
+    -- but for safety, let's reset it to "1" because it is sure that it always will yield the first page of the search results
+    if data[PAGE] == 1 then
+        searchID = "1"
+    end
+    if data[PAGE] > totalPages then return {} end
+
     local forum = self.forums[1].forum
     if data[CATEGORY_FILTER_KEY] ~= 0 then
         forum = (map(self.forums, function(v)
@@ -151,8 +203,7 @@ function defaults:search(data)
     -- Example search URLs (from SpaceBattles):
     -- Creative Writing: https://forums.spacebattles.com/search/1/?t=post&c[child_nodes]=1&c[nodes][0]=18&c[threadmark_categories][0]=1&c[threadmark_only]=1&c[title_only]=1&o=relevance&g=1&q=Josh
     -- Quests:           https://forums.spacebattles.com/search/1/?t=post&c[child_nodes]=1&c[nodes][0]=240&c[threadmark_categories][0]=1&c[threadmark_only]=1&c[title_only]=1&o=relevance&g=1&q=Josh
-
-    local page = GETDocument(self.baseURL .. "search/1/?" .. qs({
+    local page = GETDocument(self.baseURL .. "search/" .. searchID .. "/?" .. qs({
         page = data[PAGE],
         q = data[QUERY],
         t = "post",
@@ -165,12 +216,33 @@ function defaults:search(data)
         g = 1
     }))
 
+    -- The only way I found to get it is through the URL directly.
+    searchID = page:selectFirst('meta[property="og:url"]'):attr("content")
+    searchID = searchID:match("search/(%d+)/")
+
+    totalPages = page:selectFirst(".pageNav-main .pageNav-page:last-of-type a")
+    totalPages = tonumber(totalPages and totalPages:text() or 1)
+
     return map(page:select(".block-body .contentRow"), function(v)
         local a = v:selectFirst(".contentRow-title a")
+        local wordCount = v:selectFirst("a[data-word_count]")
+        if wordCount then
+            wordCount = wordCount:attr("data-word_count")
+            if wordCount then
+                wordCount = tonumber(wordCount)
+            end
+        end
+        local author = v:selectFirst("a.username"):text()
+        local tags = map(v:select(".js-tagList a"), text)
         return Novel {
-            title = a:text(),
+            title = extractTitle(a),
             link = handleNovelURL(a:attr("href")),
-            imageURL = extractImage(self.baseURL, v:selectFirst(".contentRow-figure img"))
+            imageURL = extractImage(self.baseURL, v:selectFirst(".contentRow-figure img")),
+            wordCount = wordCount,
+            authors = {
+                author
+            },
+            tags = tags
         }
     end)
 end
@@ -183,24 +255,42 @@ return function(baseURL, _self)
 
     _self["baseURL"] = baseURL
     local novelUrlBlacklist = _self["novelUrlBlacklist"] or "^$"
-    _self["listings"] = map(_self.forums, function(v)
-        return Listing(v.title, true, function(data)
+    _self["listings"] = map(_self.forums, function(l)
+        return Listing(l.title, true, function(data)
             --- @type int
             local page = data[PAGE]
-            local url = baseURL .. "forums/." .. v.forum .. "/page-" .. page .. "/"
+            local url = baseURL .. "forums/." .. l.forum .. "/page-" .. page .. "/"
             local doc = GETDocument(url)
 
-            local pageCount = tonumber(doc:selectFirst(".pageNav-main .pageNav-page:last-of-type a"):text())
+            local pageCountElem = doc:selectFirst(".pageNav-main .pageNav-page:last-of-type a")
+            local pageCount = tonumber(pageCountElem and pageCountElem:text() or "1")
             if page > pageCount then return {} end
 
             return mapNotNil(doc:select(".js-threadList .structItem--thread"), function(v)
                 local href = v:selectFirst(".structItem-title a"):attr("href")
                 href = handleNovelURL(href)
                 if href:match(novelUrlBlacklist) then return nil end
+                local parts = v:select(".structItem-parts li")
+                local wordCount
+                for i = 0, parts:size() - 1 do
+                    local part = parts:get(i):text()
+                    if part:match("^Words: ") ~= nil then
+                        part = part:gsub("^Words: ", "")
+                        wordCount = expandNumber(part)
+                        break
+                    end
+                end
+                local author = v:selectFirst("a.username"):text()
+                local tags = map(v:select("a.tagItem"), text)
                 return Novel {
-                    title = v:selectFirst(".structItem-title"):text(),
+                    title = extractTitle(v:selectFirst(".structItem-title")),
                     link = href,
-                    imageURL = extractImage(baseURL, v:selectFirst(".structItem-cell--icon img"))
+                    imageURL = extractImage(baseURL, v:selectFirst(".structItem-cell--icon img")),
+                    wordCount = wordCount,
+                    authors = {
+                        author
+                    },
+                    tags = tags
                 }
             end)
         end)
@@ -213,9 +303,6 @@ return function(baseURL, _self)
             return v[1]
         end)),
     }
-    _self["updateSetting"] = function(id, value)
-        settings[id] = value
-    end
 
     return _self
 end
