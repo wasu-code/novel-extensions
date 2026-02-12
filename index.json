@@ -15,16 +15,16 @@
       "website": ""
     },
     {
-      "id": 0,
-      "name": "",
-      "desc": "Worked on Example",
+      "id": 1550377221,
+      "name": "Bigrand",
+      "desc": "Worked on novelvault, unhtml",
       "imageURL": "",
       "website": ""
     },
     {
-      "id": 1550377221,
-      "name": "Bigrand",
-      "desc": "Worked on unhtml",
+      "id": 0,
+      "name": "",
+      "desc": "Worked on Example",
       "imageURL": "",
       "website": ""
     },
@@ -78,9 +78,9 @@
     },
     {
       "name": "Madara",
-      "ver": "2.9.1",
+      "ver": "2.9.2",
       "url": null,
-      "hash": "ed160e1ab15729bd19f26fdff7acbcac27d2d7be7727441f059ff893db549357"
+      "hash": "4c48a1e6530d3198d43d5a537a57965fcf9f8796e51837e7cf1d76f6ad87c879"
     },
     {
       "name": "NovelFull",
@@ -102,9 +102,9 @@
     },
     {
       "name": "XenForo",
-      "ver": "1.0.5",
+      "ver": "1.0.10",
       "url": null,
-      "hash": "99e92b56c773f2c567384bbb60962b612634915f328577953193cc70cc6e31c1"
+      "hash": "a6f80230b5cdd69b742ba53a92e51f6bc0cef1a49ce2dc421f0ed0e1928371eb"
     },
     {
       "name": "dkjson",
@@ -113,10 +113,16 @@
       "hash": "97803cfe54b21695dda1e8f8a37c5933c4dc7691e5df17c2c1df6cef1203c259"
     },
     {
-      "name": "unhtml",
-      "ver": "1.0.0",
+      "name": "novelvault",
+      "ver": "1.0.2",
       "url": null,
-      "hash": "31cedb54f46b1df35b5d7630d48185d58106336b0acb555ab66dce2e209d8176"
+      "hash": "260f4bf533359c7266d62a2092533dbee982ddda144546941892e8d8301d9d2d"
+    },
+    {
+      "name": "unhtml",
+      "ver": "1.0.1",
+      "url": null,
+      "hash": "3ecb2c80afb4903be3f6827284f3fc8914f43fe31894f94fb35d47f40c03b73f"
     },
     {
       "name": "url",
