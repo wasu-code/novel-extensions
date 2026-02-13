@@ -3,7 +3,7 @@
     {
       "id": -706869138,
       "name": "wasu-code",
-      "desc": "Worked on !dev: Example, AnyWeb (+NovelUpdates), IndexedMap, MegaTranslations, Pixiv, Pokatne, Readability, Reddit",
+      "desc": "Worked on !dev: Example, AnyWeb (+NovelUpdates), FilterOptions, IndexedMap, MegaTranslations, Pixiv, Pokatne, Project Gutenberg, Readability, Reddit",
       "imageURL": "",
       "website": ""
     },
@@ -69,6 +69,12 @@
       "ver": "1.0.1",
       "url": null,
       "hash": "eb398cff152cf1ff1a7ca7ad415f55bf55aca0acefafb5363982e083de18a67d"
+    },
+    {
+      "name": "FilterOptions",
+      "ver": "0.0.0",
+      "url": null,
+      "hash": "f9a0bcf130db3ce1a690eb97b392b317c6054500c8357fe251cb074bc4e654d8"
     },
     {
       "name": "IndexedMap",
@@ -213,6 +219,17 @@
       "ver": "1.0.0",
       "libVer": "1.0.0",
       "md5": "40e19949b382d586e403ebbdcec54debefeaff152158206cf5768f3400699647",
+      "type": "LuaScript"
+    },
+    {
+      "id": 231192101,
+      "name": "Project Gutenberg",
+      "fileName": "ProjectGutenberg",
+      "imageURL": "https://www.gutenberg.org/gutenberg/pg-logo-144x144.png",
+      "lang": "all",
+      "ver": "1.0.0",
+      "libVer": "1.0.0",
+      "md5": "e09e66c525396c70364a9b87a20a6c8630489c3816ab45bb53fefcf1c57ac1fc",
       "type": "LuaScript"
     }
   ],
