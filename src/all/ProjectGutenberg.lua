@@ -1,6 +1,6 @@
--- {"id":231192101,"ver":"1.0.0","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["IndexedMap", "url"]}
+-- {"id":231192101,"ver":"1.0.0","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["FilterOptions", "url"]}
 
-local IndexedMap = Require("IndexedMap")
+local FilterOptions = Require("FilterOptions")
 local qs = Require("url").querystring
 
 local baseURL = "https://www.gutenberg.org"
@@ -84,81 +84,81 @@ local function getPassage(url)
   return pageOfElem(doc, not settings[SID_PRESERVE_STYLES])
 end
 
-local languages = IndexedMap({
-  {"Any", ""},
-  {"Afrikaans", "af"},
-  {"Aleut", "ale"},
-  {"Arabic", "ar"},
-  {"Arapaho", "arp"},
-  {"Bodo", "brx"},
-  {"Breton", "br"},
-  {"Bulgarian", "bg"},
-  {"Caló", "rmq"},
-  {"Catalan", "ca"},
-  {"Cebuano", "ceb"},
-  {"Chinese", "zh"},
-  {"Czech", "cs"},
-  {"Danish", "da"},
-  {"Dutch", "nl"},
-  {"English", "en"},
-  {"Esperanto", "eo"},
-  {"Estonian", "et"},
-  {"Farsi", "fa"},
-  {"Finnish", "fi"},
-  {"French", "fr"},
-  {"Frisian", "fy"},
-  {"Friulian", "fur"},
-  {"Gaelic, Scottish", "gla"},
-  {"Galician", "gl"},
-  {"Gamilaraay", "kld"},
-  {"German", "de"},
-  {"Greek", "el"},
-  {"Greek, Ancient", "grc"},
-  {"Hebrew", "he"},
-  {"Hungarian", "hu"},
-  {"Icelandic", "is"},
-  {"Iloko", "ilo"},
-  {"Interlingua", "ia"},
-  {"Inuktitut", "iu"},
-  {"Irish", "ga"},
-  {"Italian", "it"},
-  {"Japanese", "ja"},
-  {"Kashubian", "csb"},
-  {"Khasi", "kha"},
-  {"Korean", "ko"},
-  {"Latin", "la"},
-  {"Lithuanian", "lt"},
-  {"Maori", "mi"},
-  {"Mayan Languages", "myn"},
-  {"Middle English", "enm"},
-  {"Nahuatl", "nah"},
-  {"Napoletano-Calabrese", "nap"},
-  {"Navajo", "nav"},
-  {"North American Indian", "nai"},
-  {"Norwegian", "no"},
-  {"Occitan", "oc"},
-  {"Ojibwa", "oji"},
-  {"Old English", "ang"},
-  {"Polish", "pl"},
-  {"Portuguese", "pt"},
-  {"Romanian", "ro"},
-  {"Russian", "ru"},
-  {"Sanskrit", "sa"},
-  {"Serbian", "sr"},
-  {"Slovenian", "sl"},
-  {"Spanish", "es"},
-  {"Swedish", "sv"},
-  {"Tagabawa", "bgs"},
-  {"Tagalog", "tl"},
-  {"Telugu", "te"},
-  {"Welsh", "cy"},
-  {"Yiddish", "yi"}
-}, 0)
+local languages = FilterOptions({
+  nil,
+  {af = "Afrikaans"},
+  {ale = "Aleut"},
+  {ar = "Arabic"},
+  {arp = "Arapaho"},
+  {brx = "Bodo"},
+  {br = "Breton"},
+  {bg = "Bulgarian"},
+  {rmq = "Caló"},
+  {ca = "Catalan"},
+  {ceb = "Cebuano"},
+  {zh = "Chinese"},
+  {cs = "Czech"},
+  {da = "Danish"},
+  {nl = "Dutch"},
+  {en = "English"},
+  {eo = "Esperanto"},
+  {et = "Estonian"},
+  {fa = "Farsi"},
+  {fi = "Finnish"},
+  {fr = "French"},
+  {fy = "Frisian"},
+  {fur = "Friulian"},
+  {gla = "Gaelic, Scottish"},
+  {gl = "Galician"},
+  {kld = "Gamilaraay"},
+  {de = "German"},
+  {el = "Greek"},
+  {grc = "Greek, Ancient"},
+  {he = "Hebrew"},
+  {hu = "Hungarian"},
+  {is = "Icelandic"},
+  {ilo = "Iloko"},
+  {ia = "Interlingua"},
+  {iu = "Inuktitut"},
+  {ga = "Irish"},
+  {it = "Italian"},
+  {ja = "Japanese"},
+  {csb = "Kashubian"},
+  {kha = "Khasi"},
+  {ko = "Korean"},
+  {la = "Latin"},
+  {lt = "Lithuanian"},
+  {mi = "Maori"},
+  {myn = "Mayan Languages"},
+  {enm = "Middle English"},
+  {nah = "Nahuatl"},
+  {nap = "Napoletano-Calabrese"},
+  {nav = "Navajo"},
+  {nai = "North American Indian"},
+  {no = "Norwegian"},
+  {oc = "Occitan"},
+  {oji = "Ojibwa"},
+  {ang = "Old English"},
+  {pl = "Polish"},
+  {pt = "Portuguese"},
+  {ro = "Romanian"},
+  {ru = "Russian"},
+  {sa = "Sanskrit"},
+  {sr = "Serbian"},
+  {sl = "Slovenian"},
+  {es = "Spanish"},
+  {sv = "Swedish"},
+  {bgs = "Tagabawa"},
+  {tl = "Tagalog"},
+  {te = "Telugu"},
+  {cy = "Welsh"},
+  {yi = "Yiddish"}
+}, "Any")
 
-local sortOrder = IndexedMap({
-  {"Most Popular", "downloads"},
-  {"New Releases", "release_date"}
-}, 0)
+local sortOrder = FilterOptions{
+  {downloads = "Most Popular"},
+  {release_date = "New Releases"}
+}
 
 return {
   id = 231192101,
@@ -174,14 +174,14 @@ return {
   listings = {
     Listing("Browse", true, function(data)
       local offset = data[PAGE] * PAGE_SIZE + 1
-      local language = languages:valueAt(data[FID_LANG])
-      local order = sortOrder:valueAt(data[FID_SORT])
+      local language = languages:valueOf(data[FID_LANG])
+      local order = sortOrder:valueOf(data[FID_SORT])
 
       local params = {
         sort_order = order,
         start_index = offset
       }
-      if language ~= "" then params["query"] = "l." .. language end
+      if language then params["query"] = "l." .. language end
 
       return getListing(qs(params, "ebooks/search/"))
     end),
@@ -190,8 +190,8 @@ return {
     end)
   },
   searchFilters = {
-    DropdownFilter(FID_SORT, "Sort order", sortOrder.keys),
-    DropdownFilter(FID_LANG, "Language", languages.keys)
+    DropdownFilter(FID_SORT, "Sort order", sortOrder:labels()),
+    DropdownFilter(FID_LANG, "Language", languages:labels())
   },
 
   parseNovel = parseNovel,
