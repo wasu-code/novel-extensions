@@ -1,16 +1,16 @@
--- {"id":23119218,"ver":"0.0.0","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["dkjson>=1.0.1"]}
+-- {"id":23119218,"ver":"0.1.0","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["dkjson>=1.0.1", "class"]}
 
 local qs = Require("url").querystring
 local json = Require("dkjson")
 local HTMLToString = Require("unhtml").HTMLToString
 local FilterOptions = Require("FilterOptions")
+local makeClass = Require("class")
 
 local PAGE_SIZE = 20
 
 local baseURL = "https://wolnelektury.pl"
 
 local FID_SORT = 2
- -- alpha OR -alpha OR popularity OR -popularity
 local sortFilter = FilterOptions({
   nil,
   { alpha = "Alfabetyczne" },
@@ -26,25 +26,6 @@ end
 
 local function expandURL(url, type)
   return baseURL .. "/" .. url:gsub("^/", "")
-end
-
---- Generic function to create class tables  
---- Creates a Lua "class" table with methods and callable constructor
---- @param methods table? Table containing initial methods (optional)
---- @return table A class-like table with `__index` and `__call`
-local function makeClass(methods)
-    local cls = methods or {}
-    cls.__index = cls
-
-    -- Make cls callable: cls(table) sets metatable
-    setmetatable(cls, {
-        __call = function(self, entry)
-            setmetatable(entry, self)
-            return entry
-        end
-    })
-
-    return cls
 end
 
 ---@class Book
@@ -161,8 +142,8 @@ local function parseNovel(url, loadChapters)
   return Book(jsonData):toNovelInfo()
 end
 
-local function getPassage(url)
-  local documentURL = expandURL("/media/book/html/"..url..".html")
+local function getPassage(slug)
+  local documentURL = expandURL("/media/book/html/"..slug..".html")
   local doc = GETDocument(documentURL)
   return pageOfElem(doc, false, ".theme-begin {float:right;}")
 end
