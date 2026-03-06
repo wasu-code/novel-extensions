@@ -7,6 +7,7 @@ local FilterOptions = Require("FilterOptions")
 local makeClass = Require("class")
 
 local PAGE_SIZE = 20
+local KEY_LISTING_URL = 3
 
 local baseURL = "https://wolnelektury.pl"
 
@@ -25,7 +26,19 @@ local function shrinkURL(url, type)
 end
 
 local function expandURL(url, type)
+  -- if no type provided it's probably Novel WebView
+  -- if not type then
+    -- baseURL.."/katalog/lektura/"..slug,
+  -- end
+  -- KEY_NOVEL_URL: baseURL".."/api/2/books/"..slug.."/?format=json"
+  -- KEY_CHAPTER_URL: baseURL.."/media/book/html/"..slug..".html
+  -- KEY_LISTING_URL baseURL.."/api/2/"..slug
   return baseURL .. "/" .. url:gsub("^/", "")
+end
+
+--- Extracts slug from API URL
+local function extractSlug(url)
+  return url:match("/books/([^/?]+)")
 end
 
 ---@class Book
@@ -41,7 +54,7 @@ end
 ---@field genres table
 ---@field kinds table
 ---@field children table
----@field parent string|nil
+---@field parent string|nil absolute API URL to parent entry/book
 ---@field preview boolean
 ---@field epub string absolute URL to file
 ---@field mobi string absolute URL to file
@@ -83,7 +96,8 @@ end
 ---@return Novel novel
 function Book:toNovel()
   return Novel {
-    title = self.title,
+    -- for chapters use parent's slug in place of title
+    title = self.parent and extractSlug(self.parent) or self.title,
     link = shrinkURL(self.parent or self.href),
     imageURL = self.cover_thumb
   }
@@ -129,21 +143,23 @@ local function getListing(data)
     -- translator = 0
   }, "/api/2/books")
 
-  local jsonData = json.GET(expandURL(url))
+  local jsonData = json.GET(expandURL(url, KEY_LISTING_URL))
   local books = jsonData.member
 
   if not books then return {} end
+
+  -- TODO: deduplicate (chapters of the same book) and convert to Novel
 
   return map(books, function(b) return Book(b):toNovel() end)
 end
 
 local function parseNovel(url, loadChapters)
-  local jsonData = json.GET(expandURL(url))
+  local jsonData = json.GET(expandURL(url, KEY_NOVEL_URL))
   return Book(jsonData):toNovelInfo()
 end
 
 local function getPassage(slug)
-  local documentURL = expandURL("/media/book/html/"..slug..".html")
+  local documentURL = expandURL("/media/book/html/"..slug..".html", KEY_CHAPTER_URL)
   local doc = GETDocument(documentURL)
   return pageOfElem(doc, false, ".theme-begin {float:right;}")
 end
