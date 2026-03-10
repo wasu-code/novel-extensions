@@ -3,7 +3,7 @@
     {
       "id": -706869138,
       "name": "wasu-code",
-      "desc": "Worked on !dev: Example, AnyWeb (+NovelUpdates), FilterOptions, IndexedMap, MegaTranslations, Pixiv, Pokatne, Project Gutenberg, Readability, Reddit, Wolne Lektury, class",
+      "desc": "Worked on !dev: Example, AnyWeb (+NovelUpdates), FilterOptions, MegaTranslations, Pixiv, Pokatne, Project Gutenberg, Readability, Reddit, Wolne Lektury, class",
       "imageURL": "",
       "website": ""
     },
@@ -75,12 +75,6 @@
       "ver": "0.0.0",
       "url": null,
       "hash": "f9a0bcf130db3ce1a690eb97b392b317c6054500c8357fe251cb074bc4e654d8"
-    },
-    {
-      "name": "IndexedMap",
-      "ver": "0.0.5",
-      "url": null,
-      "hash": "331de1904f14d1a5dae79974529e2c1cc5755849921ae723b1f7bd08b336af74"
     },
     {
       "name": "Madara",
@@ -222,9 +216,9 @@
       "fileName": "Pixiv",
       "imageURL": "https://s.pximg.net/common/images/apple-touch-icon.png?20250206",
       "lang": "all",
-      "ver": "1.0.0",
+      "ver": "1.0.1",
       "libVer": "1.0.0",
-      "md5": "40e19949b382d586e403ebbdcec54debefeaff152158206cf5768f3400699647",
+      "md5": "0641653d0df5ca8cfbc76fddf652782d500d21d949b8562aabc4ef37d782a066",
       "type": "LuaScript"
     },
     {
