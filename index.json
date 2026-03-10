@@ -3,7 +3,7 @@
     {
       "id": -706869138,
       "name": "wasu-code",
-      "desc": "Worked on !dev: Example, AnyWeb (+NovelUpdates), FilterOptions, IndexedMap, MegaTranslations, Pixiv, Pokatne, Project Gutenberg, Readability, Reddit",
+      "desc": "Worked on !dev: Example, AnyWeb (+NovelUpdates), FilterOptions, IndexedMap, MegaTranslations, Pixiv, Pokatne, Project Gutenberg, Readability, Reddit, Wolne Lektury, class",
       "imageURL": "",
       "website": ""
     },
@@ -113,6 +113,12 @@
       "hash": "a6f80230b5cdd69b742ba53a92e51f6bc0cef1a49ce2dc421f0ed0e1928371eb"
     },
     {
+      "name": "class",
+      "ver": "1.0.0",
+      "url": null,
+      "hash": "a1646516a731341487aae034d707e7ffc0b363365a24157ff052442ff59bba66"
+    },
+    {
       "name": "dkjson",
       "ver": "1.0.1",
       "url": null,
@@ -219,6 +225,17 @@
       "ver": "1.0.0",
       "libVer": "1.0.0",
       "md5": "40e19949b382d586e403ebbdcec54debefeaff152158206cf5768f3400699647",
+      "type": "LuaScript"
+    },
+    {
+      "id": 23119218,
+      "name": "Wolne Lektury",
+      "fileName": "WolneLektury",
+      "imageURL": "https://fundacja.wolnelektury.pl/wp-content/themes/koed_wl/images/wolnelektury-favicon.png",
+      "lang": "pl",
+      "ver": "0.1.0",
+      "libVer": "1.0.0",
+      "md5": "61339d2301afbf02ad273ea751776ed3549e865748f434ded73b065183ee43c2",
       "type": "LuaScript"
     },
     {
