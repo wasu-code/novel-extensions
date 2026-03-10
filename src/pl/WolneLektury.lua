@@ -37,8 +37,13 @@ local function expandURL(url, type)
 end
 
 --- Extracts slug from API URL
-local function extractSlug(url)
-  return url:match("/books/([^/?]+)")
+local function extractTitleFromURL(url)
+  return url
+    :match("/books/([^/?]+)") -- extract slug
+    :gsub("-", " ") -- replace hyphens with spaces
+    :gsub("(%w)(%w*)", function(first, rest) -- capitalize first letters
+        return first:upper() .. rest:lower()
+    end)
 end
 
 ---@class Book
@@ -97,7 +102,7 @@ end
 function Book:toNovel()
   return Novel {
     -- for chapters use parent's slug in place of title
-    title = self.parent and extractSlug(self.parent) or self.title,
+    title = self.parent and extractTitleFromURL(self.parent) or self.title,
     link = shrinkURL(self.parent or self.href),
     imageURL = self.cover_thumb
   }
@@ -148,9 +153,18 @@ local function getListing(data)
 
   if not books then return {} end
 
-  -- TODO: deduplicate (chapters of the same book) and convert to Novel
+  -- that will get rid of duplicates only on THIS page
+  -- some duplicates may still occur if spread through multiple pages
+  local seen = {}
+  local novels = {}
+  for _, b in ipairs(books) do
+    if not b.parent or not seen[b.parent] then
+      table.insert(novels, Book(b):toNovel())
+    end
+    seen[b.parent or b.href] = true
+  end
 
-  return map(books, function(b) return Book(b):toNovel() end)
+  return novels
 end
 
 local function parseNovel(url, loadChapters)
