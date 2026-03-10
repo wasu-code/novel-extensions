@@ -1,9 +1,9 @@
--- {"id":23119217,"ver":"1.0.0","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["dkjson>=1.0.1", "url>=0.0.4"]}
+-- {"id":23119217,"ver":"1.0.1","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["dkjson>=1.0.1", "url>=0.0.4"]}
 
 ---@alias Novel NovelInfo
 
 local json = Require("dkjson")
-local IndexedMap = Require("IndexedMap")
+local FilterOptions = Require("FilterOptions")
 local urlLib = Require("url")
 local qs = urlLib.querystring
 local encode = urlLib.encode
@@ -35,84 +35,84 @@ local FID_SEARCH_MODE = 11
 local FID_GROUP_SERIES = 12
 local FID_GENRE = 13
 
-local orderFilter = IndexedMap({
-  {"Newest", "date_d"},
-  {"Oldest", "date"},
-}, 0)
+local orderFilter = FilterOptions {
+  { date_d = "Newest" },
+  { date = "Oldest" }
+}
 
-local modeFilter = IndexedMap({
-  {"Show all", "all"},
-  {"Safe", "safe"},
-  {"R-18 🔒", "r18"}
-}, 0)
+local modeFilter = FilterOptions {
+  { all = "Show all" },
+  { safe = "Safe" },
+  { r18 = "R-18 🔒" }
+}
 
-local modeFilter_popular = IndexedMap({
-  {"Safe", "safe"},
-  {"R-18 🔒", "r18"}
-}, 0)
+local modeFilter_popular = FilterOptions {
+  { safe = "Safe" },
+  { r18 = "R-18 🔒" }
+}
 
-local modeFilter_followed = IndexedMap({
-  {"Show all", "all"},
-  {"R-18 🔒", "r18"}
-}, 0)
+local modeFilter_followed = FilterOptions {
+  { all = "Show all" },
+  { r18 = "R-18 🔒" }
+}
 
-local searchModeFilter = IndexedMap({
-  {"Tags, Titles, Captions", "s_tag"},
-  {"Tags (exact match)", "s_tag_full"},
-  {"Tags (partial match)", "s_tag_only"},
-  {"Text", "s_tc"}
-}, 0)
+local searchModeFilter = FilterOptions {
+  { s_tag = "Tags, Titles, Captions" },
+  { s_tag_full = "Tags (exact match)" },
+  { s_tag_only = "Tags (partial match)" },
+  { s_tc = "Text" }
+}
 
-local languageFilter = IndexedMap({
-  {"All languages", "all"},
-  {"English", "en"},
-  {"日本語", "ja"},
-  {"한국어", "ko"},
-  {"简体中文", "zh-cn"},
-  {"繁體中文", "zh-cw"},
-  {"Bahasa Indonesia", "id"},
-  {"Dansk", "da"},
-  {"Deutsch", "de"},
-  {"Español", "es"},
-  {"Español (Latinoamérica)", "es-419"},
-  {"Filipino", "tl"},
-  {"Français", "fr"},
-  {"Hrvatski", "hr"},
-  {"Italiano", "it"},
-  {"Nederlands", "nl"},
-  {"Polski", "pl"},
-  {"Português (Brasil)", "pt-br"},
-  {"Português (Portugal)", "pt-pt"},
-  {"Tiếng Việt", "vi"},
-  {"Türkçe", "tr"},
-  {"Русский", "ru"},
-  {"العربية", "ar"},
-  {"ไทย", "th"},
-  {"Other", "other"}
-}, 0)
+local languageFilter = FilterOptions {
+  { all = "All languages" },
+  { en = "English" },
+  { ja = "日本語" },
+  { ko = "한국어" },
+  { ["zh-cn"] = "简体中文" },
+  { ["zh-cw"] = "繁體中文" },
+  { id = "Bahasa Indonesia" },
+  { da = "Dansk" },
+  { de = "Deutsch" },
+  { es = "Español" },
+  { ["es-419"] = "Español (Latinoamérica)" },
+  { tl = "Filipino" },
+  { fr = "Français" },
+  { hr = "Hrvatski" },
+  { it = "Italiano" },
+  { nl = "Nederlands" },
+  { pl = "Polski" },
+  { ["pt-br"] = "Português (Brasil)" },
+  { ["pt-pt"] = "Português (Portugal)" },
+  { vi = "Tiếng Việt" },
+  { tr = "Türkçe" },
+  { ru = "Русский" },
+  { ar = "العربية" },
+  { th = "ไทย" },
+  { other = "Other" }
+}
 
-local genreFilter = IndexedMap({
-  {"All Genres 👶", "all"},
-  {"Popular with male 🔞", "male"},
-  {"popular with female 🔞", "female"},
-  {"Romance", "romance"},
-  {"Isekai fantasy", "isekai_fantasy"},
-  {"Contemporary fantasy", "contemporary_fantasy"},
-  {"Mystery", "mystery"},
-  {"Horror", "horror"},
-  {"Sci-fi", "sci-fi"},
-  {"Literature", "literature"},
-  {"Drama", "drama"},
-  {"Historical pieces", "historical_pieces"},
-  {"BL (yaoi)", "bl"},
-  {"Yuri", "yuri"},
-  {"For kids 👶", "for_kids"},
-  {"Poetry", "poetry"},
-  {"Essays/non-fiction", "non-fiction"},
-  {"Screenplays/scripts", "screenplays"},
-  {"Reviews/opinion pieces", "reviews"},
-  {"Other", "other"}
-}, 0)
+local genreFilter = FilterOptions {
+  { all = "All Genres 👶" },
+  { male = "Popular with male 🔞" },
+  { female = "popular with female 🔞" },
+  { romance = "Romance" },
+  { isekai_fantasy = "Isekai fantasy" },
+  { contemporary_fantasy = "Contemporary fantasy" },
+  { mystery = "Mystery" },
+  { horror = "Horror" },
+  { ["sci-fi"] = "Sci-fi" },
+  { literature = "Literature" },
+  { drama = "Drama" },
+  { historical_pieces = "Historical pieces" },
+  { bl = "BL (yaoi)" },
+  { yuri = "Yuri" },
+  { for_kids = "For kids 👶" },
+  { poetry = "Poetry" },
+  { ["non-fiction"] = "Essays/non-fiction" },
+  { screenplays = "Screenplays/scripts" },
+  { reviews = "Reviews/opinion pieces" },
+  { other = "Other" }
+}
 
 --- Retrieves URL of cover image from provided Pixiv Novel
 local function getCover(n)
@@ -286,15 +286,15 @@ local function search(data)
 
   local params = {
     word = query,
-    order = orderFilter:valueAt(data[FID_ORDER]),
-    mode = modeFilter:valueAt(data[FID_MODE]),
+    order = orderFilter:valueOf(data[FID_ORDER]),
+    mode = modeFilter:valueOf(data[FID_MODE]),
     p = page,
     csw = 0,
-    s_mode = searchModeFilter:valueAt(data[FID_SEARCH_MODE]),
+    s_mode = searchModeFilter:valueOf(data[FID_SEARCH_MODE]),
     gs = data[FID_GROUP_SERIES] and 1 or 0, -- group into series
     lang = "en"
   }
-  local selectedLang = languageFilter:valueAt(data[FID_LANGUAGE])
+  local selectedLang = languageFilter:valueOf(data[FID_LANGUAGE])
   if not (selectedLang == "all") then params["work_lang"] = selectedLang end
 
   local searchUrl = qs(params, apiURL_search .. "/" .. encode(query))
@@ -353,10 +353,10 @@ return {
       "body", "thumbnails", "novel")
     end),
     Listing("Popular original novels", false, function (data)
-      local genre = genreFilter:valueAt(data[FID_GENRE])
+      local genre = genreFilter:valueOf(data[FID_GENRE])
       local mode = ((genre == "all" or genre == "for_kids") and "safe")
                 or ((genre == "male" or genre == "female") and "r18")
-                or modeFilter_popular:valueAt(data[FID_MODE])
+                or modeFilter_popular:valueOf(data[FID_MODE])
 
       return parseListing(qs({
         mode = mode,
@@ -369,7 +369,7 @@ return {
 
       return parseListing(qs({
         p = data[PAGE],
-        mode = modeFilter_followed:valueAt(data[FID_MODE]),
+        mode = modeFilter_followed:valueOf(data[FID_MODE]),
         lang = "en"
       }, "https://www.pixiv.net/ajax/follow_latest/novel"),
       "body", "thumbnails", "novel")
@@ -388,7 +388,7 @@ return {
       if not isLoggedIn() then error("Login in WebView") end
 
       return parseListing(qs({
-        mode = modeFilter:valueAt(data[FID_MODE]),
+        mode = modeFilter:valueOf(data[FID_MODE]),
         limit = 100,
         lang = "en"
       }, "https://www.pixiv.net/ajax/discovery/novels"),
@@ -410,10 +410,10 @@ return {
   },
   searchFilters = {
     FilterGroup("Search filters", {
-      DropdownFilter(FID_SEARCH_MODE, "Search target", searchModeFilter.keys),
-      DropdownFilter(FID_MODE, "Browsing mode", modeFilter.keys),
-      DropdownFilter(FID_ORDER, "Order", orderFilter.keys),
-      DropdownFilter(FID_LANGUAGE, "Work language", languageFilter.keys),
+      DropdownFilter(FID_SEARCH_MODE, "Search target", searchModeFilter:labels()),
+      DropdownFilter(FID_MODE, "Browsing mode", modeFilter:labels()),
+      DropdownFilter(FID_ORDER, "Order", orderFilter:labels()),
+      DropdownFilter(FID_LANGUAGE, "Work language", languageFilter:labels()),
       --Period
       --Bookmarks
       --Text length
@@ -421,11 +421,11 @@ return {
       CheckboxFilter(FID_GROUP_SERIES, "Group into series")
     }),
     FilterGroup("Listing: Popular original novels", {
-      DropdownFilter(FID_MODE, "Browsing mode", modeFilter_popular.keys),
-      DropdownFilter(FID_GENRE, "Genre", genreFilter.keys)
+      DropdownFilter(FID_MODE, "Browsing mode", modeFilter_popular:labels()),
+      DropdownFilter(FID_GENRE, "Genre", genreFilter:labels())
     }),
     FilterGroup("Listing: Followed users", {
-      DropdownFilter(FID_MODE, "Browsing mode", modeFilter_followed.keys),
+      DropdownFilter(FID_MODE, "Browsing mode", modeFilter_followed:labels()),
     })
   },
 
