@@ -1,7 +1,11 @@
--- {"id": 23119213, "ver": "0.0.1", "libVer": "1.0.0", "author": "wasu-code", "dep": []}
+-- {"id": 23119213, "ver": "0.0.2", "libVer": "1.0.0", "author": "wasu-code", "dep": []}
+
+local SID_SHOW_COMMENTS = 1
+local SID_SHOW_DOUBLED = 2
 
 local settings = {
-  [1] = false,
+  [SID_SHOW_COMMENTS] = false,
+  [SID_SHOW_DOUBLED] = false
 }
 
 local baseURL = "https://megatranslations5.wordpress.com"
@@ -78,10 +82,25 @@ local function parseNovel(url, loadChapters)
         local links = section:select("p.has-text-align-center a")
         for j = 0, links:size() - 1 do
           local ch = links:get(j)
+          local title = header:text():gsub("Volume%s*(%d+)", "Vol.%1") .. " " .. ch:text():gsub("Chapter%s*(%d+)", "Ch.%1")
+          local link = shrinkURL(ch:attr("href"))
+
+          -- fix for doubled chapter across different novels causing UNIQUE CONSTRAINT error
+          if link == "2026/03/20/missing-short-stories/" then
+            if not settings[SID_SHOW_DOUBLED] then
+              goto continue
+            end
+            -- append novel url to distinguish chapters
+            -- text after # is not sent to server
+            link = link .. "#" .. url .. j
+            title = "🚫 " .. title
+          end
+
           table.insert(chapters, NovelChapter {
-            title = header:text():gsub("Volume%s*(%d+)", "Vol.%1") .. " " .. ch:text():gsub("Chapter%s*(%d+)", "Ch.%1"),
-            link = shrinkURL(ch:attr("href")),
+            title = title,
+            link = link,
           })
+          ::continue::
         end
       end
     end
@@ -100,7 +119,7 @@ local function getPassage(url)
     if prev and prev:tagName() == "p" and prev:selectFirst("a") then
       prev:remove() -- remove ToC/Navigation links
     end
-    if not settings[1] and wpComments then wpComments:remove() end
+    if not settings[SID_SHOW_COMMENTS] and wpComments then wpComments:remove() end
 
   return pageOfElem(story, false)
 end
@@ -129,7 +148,8 @@ return {
   hasSearch = false,
 
   settings = {
-    SwitchFilter(1, "Show comments")
+    SwitchFilter(SID_SHOW_COMMENTS, "Show comments"),
+    SwitchFilter(SID_SHOW_DOUBLED, "Show missing short stories (Not recommended)")
   },
   updateSetting = function(id, value)
     settings[id] = value
