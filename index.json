@@ -194,9 +194,9 @@
       "fileName": "MegaTranslations",
       "imageURL": "https://1.gravatar.com/avatar/74b24baa6e6a4a71642701f4ed57cc47eb2d86fba6284c575ee32628affa9fba?size=128",
       "lang": "en",
-      "ver": "0.0.1",
+      "ver": "0.0.2",
       "libVer": "1.0.0",
-      "md5": "fcf9545674a6781b8fd56c0ff6eabdff98a06bdfd3cf60408381a91b9b7d8510",
+      "md5": "88f5f928aa53984542ead2d2a177a18d9315fb9ada233a21f747997333088e2d",
       "type": "LuaScript"
     },
     {
