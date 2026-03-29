@@ -1,22 +1,22 @@
 -- {"ver":"0.0.0","author":"wasu-code","dep":[]}
 
 --- FilterOptions aims to make managing Shosetsu filter values/labels easier.  
--- Each entry can be:
---   1. An empty table `{}` or `nil` → treated as explicit nil value
---   2. A map-style table `{ key = value }`  
---   3. Simple types like sting or number
---
--- Example: 
--- ```lua
--- local sort = FilterOptions({
---   nil,                     -- value: nil         label: "Default"
---   "newest",                -- value: "newest"    label: "newest"
---   "oldest",                -- value: "oldest"    label: "oldest"
---   { top_rated = "best" },  -- value: "top_rated" label: "best"
--- }, "Default")
--- ```
--- @param entries table[] List of entries (strings, numbers, booleans, tables(value=label))
--- @param nilLabel string Optional label for nil / empty entries (default "Default")
+--- Each entry can be:
+---   1. An empty table `{}` or `nil` → treated as explicit nil value
+---   2. A map-style table `{ key = value }`  
+---   3. Simple types like sting or number
+---
+--- Example: 
+--- ```lua
+--- local sort = FilterOptions({
+---   nil,                     -- value: nil         label: "Default"
+---   "newest",                -- value: "newest"    label: "newest"
+---   "oldest",                -- value: "oldest"    label: "oldest"
+---   { top_rated = "best" },  -- value: "top_rated" label: "best"
+--- }, "Default")
+--- ```
+--- @param entries (string|number|boolean|table)[] List of entries (strings, numbers, booleans, tables(value=label))
+--- @param nilLabel string|nil Optional label for nil / empty entries (default "Default")
 local function FilterOptions(entries, nilLabel)
   nilLabel = nilLabel or "Default"
 
