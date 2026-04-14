@@ -1,4 +1,4 @@
--- {"ver":"0.0.0","author":"wasu-code","dep":[]}
+-- {"ver":"0.0.1","author":"wasu-code","dep":[]}
 
 --- FilterOptions aims to make managing Shosetsu filter values/labels easier.  
 --- Each entry can be:
@@ -61,6 +61,24 @@ local function FilterOptions(entries, nilLabel)
   function map:valueOf(index)
     local v = values[index + 1]
     return v ~= NIL and v or nil
+  end
+
+  --- Safely get value at zero-based index.
+  --- Returns nil if the index is not a valid number.
+  function map:valueOfOrNil(index)
+    if type(index) ~= "number" then
+      return nil
+    end
+    return self:valueOf(index)
+  end
+
+  --- Safely get value at zero-based index.
+  --- Falls back to the first element (index 0) if index is nil or invalid.
+  function map:valueOfOrFirst(index)
+    if type(index) ~= "number" then
+      return self:valueOf(0)
+    end
+    return self:valueOf(index)
   end
 
   --- Get all labels as one-based table
