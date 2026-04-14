@@ -1,4 +1,4 @@
--- {"id":231192101,"ver":"1.0.0","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["FilterOptions", "url"]}
+-- {"id":231192101,"ver":"1.0.0","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["FilterOptions>=0.0.1", "url"]}
 
 local FilterOptions = Require("FilterOptions")
 local qs = Require("url").querystring
@@ -174,8 +174,8 @@ return {
   listings = {
     Listing("Browse", true, function(data)
       local offset = data[PAGE] * PAGE_SIZE + 1
-      local language = data[FID_LANG] and languages:valueOf(data[FID_LANG])
-      local order = data[FID_SORT] and sortOrder:valueOf(data[FID_SORT])
+      local language = languages:valueOfOrFirst(data[FID_LANG])
+      local order = sortOrder:valueOfOrFirst(data[FID_SORT])
 
       local params = {
         sort_order = order,
