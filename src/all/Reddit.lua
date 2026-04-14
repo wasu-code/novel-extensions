@@ -1,4 +1,4 @@
--- {"id": 23119212, "ver": "1.0.4", "libVer": "1.0.0", "author": "wasu-code", "dep": ["url>=1.0.0"]}
+-- {"id": 23119212, "ver": "1.0.5", "libVer": "1.0.0", "author": "wasu-code", "dep": ["url>=1.0.0"]}
 
 local qs = Require("url").querystring
 
@@ -71,8 +71,8 @@ local function listing(data, subreddit)
   LAST_SUBREDDIT = subreddit
 
   local page = data[PAGE]
-  local sort = SORT_VALUES[data[FID_SORT] + 1]
-  local flair = data[FID_FLAIR]
+  local sort = SORT_VALUES[(data[FID_SORT] or 0) + 1]
+  local flair = data[FID_FLAIR] or ""
 
   local params = {
     name = subreddit
@@ -165,8 +165,8 @@ local function search(data)
     if not LAST_SUBREDDIT then error("Invalid query format. Expected: 'r/subreddit' or a valid Reddit URL.") end
 
     local page = data[PAGE]
-    local sort = SORT_VALUES[data[FID_SORT] + 1]
-    local flair = data[FID_FLAIR]
+    local sort = SORT_VALUES[(data[FID_SORT] or 0) + 1]
+    local flair = data[FID_FLAIR] or ""
 
     local url
 
