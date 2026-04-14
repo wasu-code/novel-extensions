@@ -1,4 +1,4 @@
--- {"id":23119217,"ver":"1.0.1","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["dkjson>=1.0.1", "url>=0.0.4"]}
+-- {"id":23119217,"ver":"1.0.2","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["dkjson>=1.0.1", "url>=0.0.4"]}
 
 ---@alias Novel NovelInfo
 
@@ -286,15 +286,16 @@ local function search(data)
 
   local params = {
     word = query,
-    order = orderFilter:valueOf(data[FID_ORDER]),
-    mode = modeFilter:valueOf(data[FID_MODE]),
+    order = data[FID_ORDER] and orderFilter:valueOf(data[FID_ORDER]),
+    mode = data[FID_MODE] and modeFilter:valueOf(data[FID_MODE]),
     p = page,
     csw = 0,
-    s_mode = searchModeFilter:valueOf(data[FID_SEARCH_MODE]),
+    s_mode = data[FID_SEARCH_MODE] and searchModeFilter:valueOf(data[FID_SEARCH_MODE]),
+    original_only = data[FID_ORIGINAL_ONLY] and 1,
     gs = data[FID_GROUP_SERIES] and 1 or 0, -- group into series
     lang = "en"
   }
-  local selectedLang = languageFilter:valueOf(data[FID_LANGUAGE])
+  local selectedLang = data[FID_LANGUAGE] and languageFilter:valueOf(data[FID_LANGUAGE])
   if not (selectedLang == "all") then params["work_lang"] = selectedLang end
 
   local searchUrl = qs(params, apiURL_search .. "/" .. encode(query))
@@ -353,10 +354,10 @@ return {
       "body", "thumbnails", "novel")
     end),
     Listing("Popular original novels", false, function (data)
-      local genre = genreFilter:valueOf(data[FID_GENRE])
+      local genre = genreFilter:valueOf(data[FID_GENRE] or 0)
       local mode = ((genre == "all" or genre == "for_kids") and "safe")
                 or ((genre == "male" or genre == "female") and "r18")
-                or modeFilter_popular:valueOf(data[FID_MODE])
+                or (data[FID_MODE] and modeFilter_popular:valueOf(data[FID_MODE]))
 
       return parseListing(qs({
         mode = mode,
@@ -369,7 +370,7 @@ return {
 
       return parseListing(qs({
         p = data[PAGE],
-        mode = modeFilter_followed:valueOf(data[FID_MODE]),
+        mode = data[FID_MODE] and modeFilter_followed:valueOf(data[FID_MODE]),
         lang = "en"
       }, "https://www.pixiv.net/ajax/follow_latest/novel"),
       "body", "thumbnails", "novel")
@@ -388,7 +389,7 @@ return {
       if not isLoggedIn() then error("Login in WebView") end
 
       return parseListing(qs({
-        mode = modeFilter:valueOf(data[FID_MODE]),
+        mode = data[FID_MODE] and modeFilter:valueOf(data[FID_MODE]),
         limit = 100,
         lang = "en"
       }, "https://www.pixiv.net/ajax/discovery/novels"),
