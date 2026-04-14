@@ -141,7 +141,7 @@ local Author = {}
 local function getListing(data)
   local url = qs({
     offset = PAGE_SIZE * data[PAGE],
-    sort = sortFilter:valueOf(data[FID_SORT]),
+    sort = sortFilter:valueOfOrFirst(data[FID_SORT]),
     search = data[QUERY],
     format = "json",
     -- tag = 0
