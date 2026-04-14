@@ -174,8 +174,8 @@ return {
   listings = {
     Listing("Browse", true, function(data)
       local offset = data[PAGE] * PAGE_SIZE + 1
-      local language = languages:valueOf(data[FID_LANG])
-      local order = sortOrder:valueOf(data[FID_SORT])
+      local language = data[FID_LANG] and languages:valueOf(data[FID_LANG])
+      local order = data[FID_SORT] and sortOrder:valueOf(data[FID_SORT])
 
       local params = {
         sort_order = order,
