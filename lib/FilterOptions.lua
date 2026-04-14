@@ -57,23 +57,19 @@ local function FilterOptions(entries, nilLabel)
     return l
   end
 
-  --- Get value at zero-based index
+  --- Get value at zero-based index  
+  --- For safe access, use `valueOfOrFirst`.
+  --- @param index number Zero-based index (must be a valid number)
+  --- @return any|nil value The value at the given index (can be nil if stored value is NIL)
   function map:valueOf(index)
     local v = values[index + 1]
     return v ~= NIL and v or nil
   end
 
-  --- Safely get value at zero-based index.
-  --- Returns nil if the index is not a valid number.
-  function map:valueOfOrNil(index)
-    if type(index) ~= "number" then
-      return nil
-    end
-    return self:valueOf(index)
-  end
-
-  --- Safely get value at zero-based index.
-  --- Falls back to the first element (index 0) if index is nil or invalid.
+  --- Safely get value at zero-based index.  
+  --- Falls back to the first element if index is nil or invalid.
+  --- @param index number|nil
+  --- @return any|nil value The value at the given index (can be nil if stored value is NIL)
   function map:valueOfOrFirst(index)
     if type(index) ~= "number" then
       return self:valueOf(0)
