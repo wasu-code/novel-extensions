@@ -1,4 +1,4 @@
--- {"id": 23119214, "ver": "1.0.9", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=1.1.0", "url", "unhtml"]}
+-- {"id": 23119214, "ver": "1.0.10", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=1.1.0", "url", "unhtml"]}
 
 local parseArticle = Require("Readability").parse
 local qs = Require("url").querystring
@@ -312,9 +312,9 @@ end
 
 local function parseListing(data)
   local doc = GETDocument(qs({
-    sort = data[FID_SORT] + 1,
+    sort = (data[FID_SORT] or 0) + 1,
     order = data[FID_ORDER] and 2 or 1,
-    status = data[FID_STATUS] + 1,
+    status = (data[FID_STATUS] or 0) + 1,
     pg = data[PAGE]
   }, novelUpdatesURL .. "/novelslisting/"))
 
