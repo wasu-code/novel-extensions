@@ -72,9 +72,9 @@
     },
     {
       "name": "FilterOptions",
-      "ver": "0.0.0",
+      "ver": "0.0.1",
       "url": null,
-      "hash": "f9a0bcf130db3ce1a690eb97b392b317c6054500c8357fe251cb074bc4e654d8"
+      "hash": "a5b5231f5d1fdd8cbef0c164119f64cb61fc5b8b9434a8e81f1bd4270647cc60"
     },
     {
       "name": "Madara",
@@ -172,9 +172,9 @@
       "fileName": "Pokatne",
       "imageURL": "https://www.pokatne.pl/images/apple-touch-icon.png",
       "lang": "pl",
-      "ver": "1.0.3",
+      "ver": "1.0.4",
       "libVer": "1.0.0",
-      "md5": "83bad017ccdae9383475613bb43bd90d016e53b7e0946cd432341c4eccac7f4e",
+      "md5": "7346418ba43156b034d4bb83765254c2f5fccb6e1db90daa2b09339d0f10325f",
       "type": "LuaScript"
     },
     {
@@ -183,9 +183,9 @@
       "fileName": "Reddit",
       "imageURL": "https://www.redditstatic.com/shreddit/assets/snoo_wave.png",
       "lang": "all",
-      "ver": "1.0.4",
+      "ver": "1.0.5",
       "libVer": "1.0.0",
-      "md5": "c0fbab07cd10813abc739b31899b75b9b1b74eeaa5781764b58f83dc8e654841",
+      "md5": "ba2a5f0f627dc1f7336262bebca0c12152c4ba06a241650eea06b630fd4b2a7d",
       "type": "LuaScript"
     },
     {
@@ -205,9 +205,9 @@
       "fileName": "AnyWeb",
       "imageURL": "https://novelupdates.com/appicon.png",
       "lang": "all",
-      "ver": "1.0.9",
+      "ver": "1.0.10",
       "libVer": "1.0.0",
-      "md5": "5a9ecfb4e84f324a617f83621ec0f22efe33cbe4def1c8be39d74ab1aa314dcc",
+      "md5": "61df56c811b3818ae01cd132d4e08af4c11d56071036a56ca4d63342276ceb94",
       "type": "LuaScript"
     },
     {
@@ -216,9 +216,9 @@
       "fileName": "Pixiv",
       "imageURL": "https://s.pximg.net/common/images/apple-touch-icon.png?20250206",
       "lang": "all",
-      "ver": "1.0.1",
+      "ver": "1.0.2",
       "libVer": "1.0.0",
-      "md5": "0641653d0df5ca8cfbc76fddf652782d500d21d949b8562aabc4ef37d782a066",
+      "md5": "2c3c5461f5541c3bcb7e6f34685e2f63127e849a8a1e29620f1b5d0e9db5c0bb",
       "type": "LuaScript"
     },
     {
@@ -229,7 +229,7 @@
       "lang": "pl",
       "ver": "0.1.0",
       "libVer": "1.0.0",
-      "md5": "61339d2301afbf02ad273ea751776ed3549e865748f434ded73b065183ee43c2",
+      "md5": "11d7d85b9e10af05638d25867b12e4362bfafc37164b6db9b20db9ce921d6276",
       "type": "LuaScript"
     },
     {
@@ -240,7 +240,7 @@
       "lang": "all",
       "ver": "1.0.0",
       "libVer": "1.0.0",
-      "md5": "e09e66c525396c70364a9b87a20a6c8630489c3816ab45bb53fefcf1c57ac1fc",
+      "md5": "314376f1e9d3825898f4a41b2689084f446ce9b48efad9e737d73f847c2a70a3",
       "type": "LuaScript"
     }
   ],
