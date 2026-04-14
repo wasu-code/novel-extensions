@@ -1,4 +1,4 @@
--- {"id": 23119211, "ver": "1.0.3", "libVer": "1.0.0", "author": "wasu-code", "dep": ["url>=1.0.0"]}
+-- {"id": 23119211, "ver": "1.0.4", "libVer": "1.0.0", "author": "wasu-code", "dep": ["url>=1.0.0"]}
 
 local qs = Require("url").querystring
 
@@ -15,6 +15,22 @@ local FID_SERIES = 5
 local FID_LECTURE_TIME = 6
 local FID_MIN_RATING = 7
 local FID_YEAR = 8
+
+--- Returns true if the string is not nil, not empty, and not only whitespace.
+---
+--- @param s string|nil
+--- @return boolean
+local function hasText(s)
+  return type(s) == "string" and s:match("%S") ~= nil
+end
+
+--- Returns true if the number is positive (> 0).
+---
+--- @param x number|nil
+--- @return boolean
+local function isPositive(x)
+  return type(x) == "number" and x > 0
+end
 
 local function shrinkURL(url)
   return url:gsub("^https://www%.pokatne%.pl/?", "")
@@ -177,12 +193,12 @@ return {
             [2] = "all", -- Wszystko
         })[data[FID_CAT]]
       end
-      if data[FID_WARNING] > 0 then filters["warning"] = data[FID_WARNING] == 1 and 1 or 0 end
-      if data[FID_SERIES] > 0 then filters["series"] = data[FID_SERIES] == 1 and 1 or 0 end
-      if data[FID_TAG] ~= "" then filters["tag"] = data[FID_TAG] end
-      if data[FID_LECTURE_TIME] ~= "" then filters["lecture_time"] = data[FID_LECTURE_TIME] end
-      if data[FID_MIN_RATING] ~= "" then filters["min_rating"] = data[FID_MIN_RATING] end
-      if data[FID_YEAR] ~= "" then filters["year"] = data[FID_YEAR] end
+      if isPositive(data[FID_WARNING]) then filters["warning"] = data[FID_WARNING] == 1 and 1 or 0 end
+      if isPositive(data[FID_SERIES]) then filters["series"] = data[FID_SERIES] == 1 and 1 or 0 end
+      if hasText(data[FID_TAG]) then filters["tag"] = data[FID_TAG] end
+      if hasText(data[FID_LECTURE_TIME]) then filters["lecture_time"] = data[FID_LECTURE_TIME] end
+      if hasText(data[FID_MIN_RATING]) then filters["min_rating"] = data[FID_MIN_RATING] end
+      if hasText(data[FID_YEAR]) then filters["year"] = data[FID_YEAR] end
 
       -- if filters are present listing doesn't increment
       if next(filters) and data[PAGE] ~= 1 then return {} end
