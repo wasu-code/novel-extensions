@@ -1,4 +1,4 @@
--- {"id":23119218,"ver":"0.1.0","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["dkjson>=1.0.1", "class"]}
+-- {"id":23119218,"ver":"0.1.0","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["dkjson>=1.0.1", "class", "FilterOptions>=0.0.2"]}
 
 local qs = Require("url").querystring
 local json = Require("dkjson")

@@ -1,4 +1,4 @@
--- {"id":23119217,"ver":"1.0.2","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["dkjson>=1.0.1", "url>=0.0.4", "FilterOptions>=0.0.1"]}
+-- {"id":23119217,"ver":"1.0.2","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["dkjson>=1.0.1", "url>=0.0.4", "FilterOptions>=0.0.2"]}
 
 ---@alias Novel NovelInfo
 

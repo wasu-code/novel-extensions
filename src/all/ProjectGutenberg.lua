@@ -1,4 +1,4 @@
--- {"id":231192101,"ver":"1.0.0","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["FilterOptions>=0.0.1", "url"]}
+-- {"id":231192101,"ver":"1.0.0","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["FilterOptions>=0.0.2", "url"]}
 
 local FilterOptions = Require("FilterOptions")
 local qs = Require("url").querystring
