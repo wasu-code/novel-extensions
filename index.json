@@ -72,9 +72,9 @@
     },
     {
       "name": "FilterOptions",
-      "ver": "0.0.1",
+      "ver": "0.0.2",
       "url": null,
-      "hash": "a5b5231f5d1fdd8cbef0c164119f64cb61fc5b8b9434a8e81f1bd4270647cc60"
+      "hash": "f6c7fb398cd85e834eba89f4a340b30883fabcf24e6b8ea724e97a6a81503612"
     },
     {
       "name": "Madara",
@@ -218,7 +218,7 @@
       "lang": "all",
       "ver": "1.0.2",
       "libVer": "1.0.0",
-      "md5": "2c3c5461f5541c3bcb7e6f34685e2f63127e849a8a1e29620f1b5d0e9db5c0bb",
+      "md5": "98aa8d285efb3d46e5acdc99240f8f28fbe0a9ad94135016f691b9e9188ff038",
       "type": "LuaScript"
     },
     {
@@ -229,7 +229,7 @@
       "lang": "pl",
       "ver": "0.1.0",
       "libVer": "1.0.0",
-      "md5": "11d7d85b9e10af05638d25867b12e4362bfafc37164b6db9b20db9ce921d6276",
+      "md5": "72d426b6a4e84dc004b127b1ff6c43f83505bd56ac8be5bd60d86515e4fa68f4",
       "type": "LuaScript"
     },
     {
@@ -240,7 +240,7 @@
       "lang": "all",
       "ver": "1.0.0",
       "libVer": "1.0.0",
-      "md5": "314376f1e9d3825898f4a41b2689084f446ce9b48efad9e737d73f847c2a70a3",
+      "md5": "1d69e4aa379786f671ea25d7fd0a2bbf115b599285781fefa35f50fd1659993a",
       "type": "LuaScript"
     }
   ],
