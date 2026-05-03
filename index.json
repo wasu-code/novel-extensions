@@ -216,9 +216,9 @@
       "fileName": "Pixiv",
       "imageURL": "https://s.pximg.net/common/images/apple-touch-icon.png?20250206",
       "lang": "all",
-      "ver": "1.0.2",
+      "ver": "1.0.3",
       "libVer": "1.0.0",
-      "md5": "98aa8d285efb3d46e5acdc99240f8f28fbe0a9ad94135016f691b9e9188ff038",
+      "md5": "34be045f96d69f970a02290041db136e99f5ac3be534b4f66559d4a02f8f5567",
       "type": "LuaScript"
     },
     {
