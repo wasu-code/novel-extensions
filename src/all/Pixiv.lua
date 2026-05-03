@@ -1,4 +1,4 @@
--- {"id":23119217,"ver":"1.0.2","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["dkjson>=1.0.1", "url>=0.0.4", "FilterOptions>=0.0.2"]}
+-- {"id":23119217,"ver":"1.0.3","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["dkjson>=1.0.1", "url>=0.0.4", "FilterOptions>=0.0.2"]}
 
 ---@alias Novel NovelInfo
 
@@ -291,7 +291,7 @@ local function search(data)
     p = page,
     csw = 0,
     s_mode = searchModeFilter:valueOfOrFirst(data[FID_SEARCH_MODE]),
-    original_only = data[FID_ORIGINAL_ONLY] and 1,
+    original_only = data[FID_ORIGINAL_ONLY] and 1 or 0,
     gs = data[FID_GROUP_SERIES] and 1 or 0, -- group into series
     lang = "en"
   }
