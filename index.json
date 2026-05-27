@@ -238,9 +238,9 @@
       "fileName": "ProjectGutenberg",
       "imageURL": "https://www.gutenberg.org/gutenberg/pg-logo-144x144.png",
       "lang": "all",
-      "ver": "1.0.0",
+      "ver": "1.0.1",
       "libVer": "1.0.0",
-      "md5": "1d69e4aa379786f671ea25d7fd0a2bbf115b599285781fefa35f50fd1659993a",
+      "md5": "5825448ffc00896cae780c2efc93bc93f702d40844b6a901f014f27937a94e12",
       "type": "LuaScript"
     }
   ],
