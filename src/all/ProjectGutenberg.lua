@@ -1,4 +1,4 @@
--- {"id":231192101,"ver":"1.0.0","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["FilterOptions>=0.0.2", "url"]}
+-- {"id":231192101,"ver":"1.0.1","libVer":"1.0.0","author":"wasu-code","repo":"","dep":["FilterOptions>=0.0.2", "url"]}
 
 local FilterOptions = Require("FilterOptions")
 local qs = Require("url").querystring
@@ -56,11 +56,13 @@ local function parseNovel(url, loadChapters)
 
   if loadChapters then
     local chapters = {}
+    local dateModified = doc:selectFirst("[itemprop=dateModified]")
+    local datePublished = doc:selectFirst("[itemprop=datePublished]")
     chapters = {
       NovelChapter {
         title = doc:selectFirst("[itemprop=headline]"):text(),
-        link = doc:selectFirst(".link.read_html"):attr("href"),
-        release = doc:selectFirst("[itemprop=dateModified]"):text()
+        link = doc:selectFirst(".read-online-button"):attr("href"),
+        release = (dateModified or datePublished):text()
       }
     }
     info:setChapters(AsList(chapters))
