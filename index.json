@@ -8,23 +8,16 @@
       "website": ""
     },
     {
-      "id": -821183208,
-      "name": "TechnoJo4",
-      "desc": "Worked on 247truyen, CommonCSS, Madara, NovelFull, WWVolare, url",
+      "id": 0,
+      "name": "",
+      "desc": "Worked on Example",
       "imageURL": "",
       "website": ""
     },
     {
       "id": 1550377221,
       "name": "Bigrand",
-      "desc": "Worked on novelvault, unhtml",
-      "imageURL": "",
-      "website": ""
-    },
-    {
-      "id": 0,
-      "name": "",
-      "desc": "Worked on Example",
+      "desc": "Worked on unhtml",
       "imageURL": "",
       "website": ""
     },
@@ -36,40 +29,21 @@
       "website": ""
     },
     {
-      "id": -2017179821,
-      "name": "Doomsdayrs",
-      "desc": "Worked on NovelFull",
-      "imageURL": "",
-      "website": ""
-    },
-    {
-      "id": -931466336,
-      "name": "JFronny",
-      "desc": "Worked on XenForo",
-      "imageURL": "",
-      "website": ""
-    },
-    {
       "id": -228911304,
       "name": "Stepets",
       "desc": "Worked on utf8",
       "imageURL": "",
       "website": ""
+    },
+    {
+      "id": -821183208,
+      "name": "TechnoJo4",
+      "desc": "Worked on url",
+      "imageURL": "",
+      "website": ""
     }
   ],
   "libraries": [
-    {
-      "name": "247truyen",
-      "ver": "1.1.2",
-      "url": null,
-      "hash": "5497988eb28d103e8f992981e3c6ee369d6d1a8171d3719c0361d8130fd9b860"
-    },
-    {
-      "name": "CommonCSS",
-      "ver": "1.0.1",
-      "url": null,
-      "hash": "eb398cff152cf1ff1a7ca7ad415f55bf55aca0acefafb5363982e083de18a67d"
-    },
     {
       "name": "FilterOptions",
       "ver": "0.0.2",
@@ -77,34 +51,10 @@
       "hash": "f6c7fb398cd85e834eba89f4a340b30883fabcf24e6b8ea724e97a6a81503612"
     },
     {
-      "name": "Madara",
-      "ver": "2.9.2",
-      "url": null,
-      "hash": "4c48a1e6530d3198d43d5a537a57965fcf9f8796e51837e7cf1d76f6ad87c879"
-    },
-    {
-      "name": "NovelFull",
-      "ver": "2.0.6",
-      "url": null,
-      "hash": "84f4fd7edfd462ff7bea853a139eb0312767de0e83fca4e68bbdb98a0b052b38"
-    },
-    {
       "name": "Readability",
       "ver": "1.1.0",
       "url": null,
       "hash": "56b29573f9223a23cb278e9247645384c43b6bd104a68b0e9ee07ff62ed66c53"
-    },
-    {
-      "name": "WWVolare",
-      "ver": "1.2.2",
-      "url": null,
-      "hash": "ae65d57adca4d64e2e1b713db84524e70b47b941d7cc58701aa8c665303bc024"
-    },
-    {
-      "name": "XenForo",
-      "ver": "1.0.10",
-      "url": null,
-      "hash": "a6f80230b5cdd69b742ba53a92e51f6bc0cef1a49ce2dc421f0ed0e1928371eb"
     },
     {
       "name": "class",
@@ -117,12 +67,6 @@
       "ver": "1.0.1",
       "url": null,
       "hash": "97803cfe54b21695dda1e8f8a37c5933c4dc7691e5df17c2c1df6cef1203c259"
-    },
-    {
-      "name": "novelvault",
-      "ver": "1.0.2",
-      "url": null,
-      "hash": "260f4bf533359c7266d62a2092533dbee982ddda144546941892e8d8301d9d2d"
     },
     {
       "name": "unhtml",
