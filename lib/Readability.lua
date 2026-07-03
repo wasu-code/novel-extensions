@@ -1,4 +1,4 @@
--- {"ver":"1.1.0","author":"wasu-code","dep":[]}
+-- {"ver":"1.1.1","author":"wasu-code","dep":[]}
 
 --- Readability Library
 -- This library processes an HTML document using Mozilla's Readability.js.
@@ -10,11 +10,11 @@ local Readability = {}
 -- Removes unnecessary elements and prepares the document for readability parsing.
 -- @param doc The HTML document to process.
 -- @param threshold (optional) Character threshold to consider as a chapter (default: 1500)
--- @param proxyURL (optional) URL of CORS proxy server (default: "https://api.allorigins.win/raw?url=")
+-- @param proxyURL (optional) URL of CORS proxy server (default: "https://shosetsu-tools.vercel.app/api/proxy?url=")
 --        This proxyURL is used to bypass CORS issues when fetching content from other domains. 
 function Readability.parse(doc, threshold, proxyURL)
   threshold = threshold or 1500
-  proxyURL = proxyURL or "https://api.allorigins.win/raw?url="
+  proxyURL = proxyURL or "https://shosetsu-tools.vercel.app/api/proxy?url="
 
   -- Remove <script>, <style>, and <head> elements
   doc:select("script"):remove()
