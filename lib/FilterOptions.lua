@@ -1,4 +1,4 @@
--- {"ver":"0.0.2","author":"wasu-code","dep":[]}
+-- {"ver":"1.0.1","author":"wsu808","dep":[]}
 
 --- FilterOptions aims to make managing Shosetsu filter values/labels easier.  
 --- Each entry can be:
