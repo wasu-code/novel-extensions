@@ -1,0 +1,43 @@
+name: Sync lib from Shosetsu Universe # Only the ones used
+
+on:
+  schedule:
+    - cron: "0 6 * * *" # once a day at 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Clone Universe repository
+        run: |
+          git clone --depth=1 https://gitlab.com/shosetsuorg/extensions.git upstream
+
+      - name: Update only existing lib files
+        run: |
+          mkdir -p lib
+          rsync -av --existing upstream/lib/ lib/
+
+      - name: Commit changes if any
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add lib
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git commit -m "chore(libs): sync remote libraries"
+          git push
