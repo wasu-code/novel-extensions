@@ -3,7 +3,7 @@
     {
       "id": -706869138,
       "name": "wasu-code",
-      "desc": "Worked on !dev: Example, AnyWeb (+NovelUpdates), FilterOptions, MegaTranslations, Pixiv, Pokatne, Project Gutenberg, Readability, Reddit, Wolne Lektury, class",
+      "desc": "Worked on !dev: Example, AnyWeb (+NovelUpdates), MegaTranslations, Pixiv, Pokatne, Project Gutenberg, Readability, Reddit, Wolne Lektury, class",
       "imageURL": "",
       "website": ""
     },
@@ -41,14 +41,21 @@
       "desc": "Worked on url",
       "imageURL": "",
       "website": ""
+    },
+    {
+      "id": -778352505,
+      "name": "wsu808",
+      "desc": "Worked on FilterOptions",
+      "imageURL": "",
+      "website": ""
     }
   ],
   "libraries": [
     {
       "name": "FilterOptions",
-      "ver": "0.0.2",
+      "ver": "1.0.1",
       "url": null,
-      "hash": "f6c7fb398cd85e834eba89f4a340b30883fabcf24e6b8ea724e97a6a81503612"
+      "hash": "f4a68eae0229819ab1e5ca73673f6f0cf81290ff024094fc0cb3f5625d6a6ebe"
     },
     {
       "name": "Readability",
@@ -116,9 +123,9 @@
       "fileName": "Pokatne",
       "imageURL": "https://www.pokatne.pl/images/apple-touch-icon.png",
       "lang": "pl",
-      "ver": "1.0.4",
+      "ver": "1.0.5",
       "libVer": "1.0.0",
-      "md5": "7346418ba43156b034d4bb83765254c2f5fccb6e1db90daa2b09339d0f10325f",
+      "md5": "3792a026d562a574644fadafee4ebeb3699ce04f65edceb4226065697c9ba9b3",
       "type": "LuaScript"
     },
     {
@@ -138,9 +145,9 @@
       "fileName": "MegaTranslations",
       "imageURL": "https://1.gravatar.com/avatar/74b24baa6e6a4a71642701f4ed57cc47eb2d86fba6284c575ee32628affa9fba?size=128",
       "lang": "en",
-      "ver": "0.0.2",
+      "ver": "0.0.3",
       "libVer": "1.0.0",
-      "md5": "88f5f928aa53984542ead2d2a177a18d9315fb9ada233a21f747997333088e2d",
+      "md5": "93b9a6b1e5e804d2596a49ca3f3f67bcb3c9e78abd6803797720b4a7ee9d84d1",
       "type": "LuaScript"
     },
     {
@@ -149,9 +156,9 @@
       "fileName": "AnyWeb",
       "imageURL": "https://novelupdates.com/appicon.png",
       "lang": "all",
-      "ver": "1.0.10",
+      "ver": "1.0.11",
       "libVer": "1.0.0",
-      "md5": "61df56c811b3818ae01cd132d4e08af4c11d56071036a56ca4d63342276ceb94",
+      "md5": "067586106537f15f2d13ae7fe770f39d5f3d93f5b81fe7526fc25503b1c8a0c4",
       "type": "LuaScript"
     },
     {
