@@ -1,4 +1,4 @@
--- {"id": 23119213, "ver": "0.0.2", "libVer": "1.0.0", "author": "wasu-code", "dep": []}
+-- {"id": 23119213, "ver": "0.0.3", "libVer": "1.0.0", "author": "wasu-code", "dep": []}
 
 local SID_SHOW_COMMENTS = 1
 local SID_SHOW_DOUBLED = 2
@@ -103,6 +103,10 @@ local function parseNovel(url, loadChapters)
           ::continue::
         end
       end
+    end
+
+    for index, chapter in ipairs(chapters) do
+      chapter:setOrder(index)
     end
     info:setChapters(chapters)
   end
