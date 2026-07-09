@@ -1,4 +1,4 @@
--- {"id": 23119211, "ver": "1.0.4", "libVer": "1.0.0", "author": "wasu-code", "dep": ["url>=1.0.0"]}
+-- {"id": 23119211, "ver": "1.0.5", "libVer": "1.0.0", "author": "wasu-code", "dep": ["url>=1.0.0"]}
 
 local qs = Require("url").querystring
 
@@ -167,6 +167,9 @@ local function parseNovel(url, loadChapters)
       }
     end
 
+    for index, chapter in ipairs(chapters) do
+      chapter:setOrder(index)
+    end
     info:setChapters(AsList(chapters))
   end
 
