@@ -1,4 +1,4 @@
--- {"id": 23119214, "ver": "1.0.10", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=1.1.0", "url", "unhtml"]}
+-- {"id": 23119214, "ver": "1.0.11", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=1.1.0", "url", "unhtml"]}
 
 local parseArticle = Require("Readability").parse
 local qs = Require("url").querystring
@@ -112,6 +112,11 @@ local function parseChapters_fromNU(doc)
   for i = 1, math.floor(n / 2) do
     chapters[i], chapters[n - i + 1] = chapters[n - i + 1], chapters[i]
   end
+
+  for index, chapter in ipairs(chapters) do
+    chapter:setOrder(index)
+  end
+
   return chapters
 end
 
@@ -206,6 +211,10 @@ local function parseChapters_fromIndex(doc, indexURL, entryType)
       end
       table.insert(chapters, entry)
     end)
+  end
+
+  for index, chapter in ipairs(chapters) do
+    chapter:setOrder(index)
   end
 
   return chapters
