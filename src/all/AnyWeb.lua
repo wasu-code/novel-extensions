@@ -1,32 +1,34 @@
--- {"id": 23119214, "ver": "1.0.11", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=1.1.0", "url", "unhtml"]}
+-- {"id": 23119214, "ver": "1.0.12", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=1.1.0", "url", "unhtml", "FilterOptions"]}
 
 local parseArticle = Require("Readability").parse
 local qs = Require("url").querystring
 local HTMLToString = Require("unhtml").HTMLToString
+local FilterOptions = Require("FilterOptions")
 
 math.randomseed(os.time())
 
 local novelUpdatesURL = "https://www.novelupdates.com"
 
+--- @deprecated Use filters to search and [ANYWEB_URL_PATTERN] to save URL
 local INDEX_PREFIX = "index:"
-local LISTING_PREFIX = "listing:"
+--- Lua Pattern for URL format used with chapter indexes.  
+--- Has two capturing groups: `index depth` and `url`.
+local ANYWEB_URL_PATTERN = "^http://(%d+%.)anyweb%.invalid/(.*)$"
 
-local USER_MANUAL = string.format([[
+local USER_MANUAL = [[
   How to use this extension?
   In the search bar type/paste:
+
+  🔍 keywords / search phrase
+  → Search for novels on NovelUpdates
 
   🔍 url
   → Parse website as single-chapter novel
 
-  🔍 %surl
+  🔍 url and change strategy in Filters
   → Parse website with multiple links as multi-chapter novel
-
-  🔍 %surl
   → Parse website with multiple links as listing of separate single-chapter novels
-
-  🔍 keywords / search phrase
-  → Search for novels on NovelUpdates
-]], INDEX_PREFIX, LISTING_PREFIX)
+]]
 
 local ANYWEB_MASCOT = [[
 (\_/)   
@@ -35,9 +37,11 @@ local ANYWEB_MASCOT = [[
 ]]
 
 -- Filters IDs
-local FID_SORT = 2
-local FID_ORDER = 3
-local FID_STATUS = 4
+local FID_NU_SORT = 2
+local FID_NU_ORDER = 3
+local FID_NU_STATUS = 4
+local FID_AW_APPROACH = 5
+local FID_AW_INDEX_DEPTH = 6
 
 -- Settings IDs
 local SID_INDEX_DEPTH = 1
@@ -48,6 +52,12 @@ local settings = {
   [SID_INDEX_DEPTH] = 3,
   [SID_INDEX_EXCLUDE_SELECTOR] = "footer, header, nav, .nav, .footer, .header",
   [SID_CUSTOM_LISTINGS] = ""
+}
+
+local approachFilter = FilterOptions {
+  { novel = "Single-chapter novel" },
+  { index = "Multi-chapter novel (index)" },
+  { listing = "Listing of novels" }
 }
 
 local text = function(v)
@@ -159,15 +169,17 @@ end
 --- @param doc Document The parsed HTML document object representing the novel index page.
 --- @param indexURL string Base URL used for resolving relative paths.
 --- @param entryType NovelChapter | Novel Type of entries in result array.
+--- @param maxDepth number Maximum depth of index searching strategy
 --- @return NovelChapter[]|Novel[] A list of NovelChapter or Novel objects.
-local function parseChapters_fromIndex(doc, indexURL, entryType)
+local function parseChapters_fromIndex(doc, indexURL, entryType, maxDepth)
   local excludeSelector = settings[SID_INDEX_EXCLUDE_SELECTOR]
-  local maxDepth = tonumber(settings[SID_INDEX_DEPTH])
 
   -- Remove excluded elements
-  map(doc:select(excludeSelector), function (el)
-    el:remove()
-  end)
+  if excludeSelector and excludeSelector ~= "" then
+    map(doc:select(excludeSelector), function (el)
+      el:remove()
+    end)
+  end
 
   local selectors, weights = {}, {}
   for d = 1, maxDepth do
@@ -222,8 +234,13 @@ end
 
 --- Parses any website as single- or multi-chapter (when prefixed with index prefix) novel
 --- @param novelURL string full novel url.
+--- @param loadChapters boolean indicates whether chapters should be parsed (or only novel metadata).
+--- @param isIndex boolean indicates wether website should be parsed as index of chapters.
+--- @param depth number? max depth of index (required when `isIndex` is `true`).
 --- @return NovelInfo
-local function parseNovel_fromWebsite(novelURL, loadChapters, isIndex)
+local function parseNovel_fromWebsite(novelURL, loadChapters, isIndex, depth)
+  if isIndex then assert(depth ~= nil, "Index depth should not be nil") end
+
   local doc = GETDocument(novelURL)
 
   -- Attempt to extract metadata using OpenGraph tags
@@ -244,7 +261,7 @@ local function parseNovel_fromWebsite(novelURL, loadChapters, isIndex)
 
   if loadChapters then
     if isIndex then
-      info:setChapters(parseChapters_fromIndex(doc, novelURL, NovelChapter))
+      info:setChapters(parseChapters_fromIndex(doc, novelURL, NovelChapter, depth))
     else
       info:setChapters({
         NovelChapter {
@@ -263,11 +280,22 @@ local function parseNovel(novelURL, loadChapters)
     return parseNovel_fromNU(novelURL, loadChapters)
   else
     local isIndex = false
+
+    local depth, indexURL = string.match(novelURL, ANYWEB_URL_PATTERN)
+    if indexURL ~= nil then
+      isIndex = true
+      depth = tonumber(depth)
+      novelURL = indexURL
+    end
+
+    -- backward compatibility
     if novelURL:sub(1, INDEX_PREFIX:len()) == INDEX_PREFIX then
       isIndex = true
+      depth = tonumber(settings[SID_INDEX_DEPTH]) or 3
       novelURL = novelURL:sub(INDEX_PREFIX:len() + 1)  -- remove the index prefix
     end
-    return parseNovel_fromWebsite(novelURL, loadChapters, isIndex)
+
+    return parseNovel_fromWebsite(novelURL, loadChapters, isIndex, depth)
   end
 end
 
@@ -301,29 +329,40 @@ end
 local function search(data)
   local query = data[QUERY]
 
-  if query:match("^https?://") or query:match(string.format("^%shttps?://", INDEX_PREFIX)) then
-    if data[PAGE] > 1 then return {} end
-
-    return {
-      Novel {
-        title = "Click to load",
-        link = query,
-      }
-    }
-  elseif query:match(string.format("^%shttps?://", LISTING_PREFIX)) then
-    local url = query:sub(LISTING_PREFIX:len() + 1) -- remove listing prefix
-    local doc = GETDocument(url)
-    return parseChapters_fromIndex(doc, url, Novel)
-  else
+  -- delegate text-based searches to Novel Updates
+  if not query:match("^https?://") then
     return searchNovelUpdates(data)
   end
+
+  -- AnyWeb doesn't support pagination
+  if data[PAGE] > 1 then return {} end
+
+  local approach = approachFilter:valueOfOrFirst(data[FID_AW_APPROACH])
+  local url = query
+  local depth = tonumber(data[FID_AW_INDEX_DEPTH]) or tonumber(settings[SID_INDEX_DEPTH]) or 3
+
+  if approach == "listing" then
+    local doc = GETDocument(url)
+    return parseChapters_fromIndex(doc, url, Novel, depth)
+  end
+
+  if approach == "index" then
+    url = string.format("http://%d.anyweb.invalid/%s", depth, url)
+  end
+
+  return {
+    Novel {
+      title = "Click to load",
+      link = url,
+    }
+  }
 end
 
 local function parseListing(data)
   local doc = GETDocument(qs({
-    sort = (data[FID_SORT] or 0) + 1,
-    order = data[FID_ORDER] and 2 or 1,
-    status = (data[FID_STATUS] or 0) + 1,
+    sort = (data[FID_NU_SORT] or 0) + 1,
+    order = data[FID_NU_ORDER] and 2 or 1,
+    status = (data[FID_NU_STATUS] or 0) + 1,
     pg = data[PAGE]
   }, novelUpdatesURL .. "/novelslisting/"))
 
@@ -359,12 +398,18 @@ return {
 
   shrinkURL = function(url) return url end,
   expandURL = function(url)
+    -- remove legacy the index prefix so novel can be opened in webview
     if url:sub(1, INDEX_PREFIX:len()) == INDEX_PREFIX then
-      -- remove the index prefix so novel can be opened in webview
       return url:sub(INDEX_PREFIX:len() + 1)
-    else
-      return url
     end
+
+    -- remove AnyWeb URL pattern so novel can be opened in webview
+    local _, indexURL = string.match(url, ANYWEB_URL_PATTERN)
+    if indexURL ~= nil then
+      return indexURL
+    end
+
+    return url
   end,
 
   listings = {
@@ -372,7 +417,7 @@ return {
     Listing("AnyWeb", false, function() error(
       "\n\n" .. ANYWEB_MASCOT .. "\n\n" .. USER_MANUAL)
     end),
-    Listing("Custom", false, function ()
+    Listing("Custom", false, function (data)
       local links = splitLines(settings[SID_CUSTOM_LISTINGS])
       if #links < 1 then
         error("Add listing URL(s) in extension settings")
@@ -380,7 +425,8 @@ return {
 
       local listingURL = links[math.random(1, #links)]
       local doc = GETDocument(listingURL)
-      return parseChapters_fromIndex(doc, listingURL, Novel)
+      local depth = tonumber(data[FID_AW_INDEX_DEPTH]) or tonumber(settings[SID_INDEX_DEPTH]) or 3
+      return parseChapters_fromIndex(doc, listingURL, Novel, depth)
     end)
   },
   parseNovel = parseNovel,
@@ -391,22 +437,28 @@ return {
   search = search,
 
   searchFilters = {
-    DropdownFilter(FID_SORT, "Sort by", {
-      "Frequency", -- 1
-      "Rank", -- 2
-      "Rating", -- 3
-      "Readers", -- 4
-      "Chapters", -- 5
-      "Reviews", -- 6
-      "Title", -- 7
-      "Last Updated" -- 8
+    FilterGroup("AnyWeb", {
+      DropdownFilter(FID_AW_APPROACH, "Parse as", approachFilter:labels()),
+      TextFilter(FID_AW_INDEX_DEPTH, "Index depth")
     }),
-    SwitchFilter(FID_ORDER, "Descending"), -- 1: "Ascending", 2: "Descending"
-    DropdownFilter(FID_STATUS, "Status", {
+    FilterGroup("NovelUpdates", {
+      DropdownFilter(FID_NU_SORT, "Sort by", {
+        "Frequency", -- 1
+        "Rank", -- 2
+        "Rating", -- 3
+        "Readers", -- 4
+        "Chapters", -- 5
+        "Reviews", -- 6
+        "Title", -- 7
+        "Last Updated" -- 8
+    }),
+    SwitchFilter(FID_NU_ORDER, "Descending"), -- 1: "Ascending", 2: "Descending"
+    DropdownFilter(FID_NU_STATUS, "Status", {
       "All", -- 1
       "Completed", -- 2
       "Ongoing", -- 3
       "Hiatus" -- 4
+    }),
     }),
   },
 
