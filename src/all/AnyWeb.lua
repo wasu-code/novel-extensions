@@ -1,4 +1,4 @@
--- {"id": 23119214, "ver": "1.0.12", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=1.1.0", "url", "unhtml", "FilterOptions"]}
+-- {"id": 23119214, "ver": "1.0.13", "libVer": "1.0.0", "author": "wasu-code", "dep": ["Readability>=1.1.0", "url", "unhtml", "FilterOptions"]}
 
 local parseArticle = Require("Readability").parse
 local qs = Require("url").querystring
@@ -301,7 +301,17 @@ end
 
 local function getPassage(chapterURL)
   local doc = GETDocument(chapterURL)
-  return pageOfElem(parseArticle(doc), true, "", true)
+  local parsedDoc = parseArticle(doc)
+
+  -- Display info for apps blocking JS (eg. Tsundoku)
+  parsedDoc:prepend([[
+    <mark x>
+      Enable embedded JavaScript to parse this article.
+      <script>document.querySelector("[x]").remove()</script>
+    </mark>
+  ]])
+
+  return pageOfElem(parsedDoc, true, "", true)
 end
 
 local function searchNovelUpdates(data)
